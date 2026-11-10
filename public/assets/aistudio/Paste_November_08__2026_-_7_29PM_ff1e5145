@@ -1,0 +1,1665 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#A99BE0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Estimar menarca">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Estimar menarca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#F9F7FD;--card:#fff;--text:#2F2B45;--muted:#6B6686;--line:#ECE8F6;--accent:#A99BE0;--grad:linear-gradient(135deg,#D3CAF6,#F8CFE0);--nav:linear-gradient(135deg,#C8EBDD,#C3DCF3);--shadow:0 2px 14px rgba(110,95,170,.08)}
+[data-theme=dark]{--bg:#221F3A;--card:#2C2948;--text:#EFEAFB;--muted:#C9C3E6;--line:#403B68;--shadow:0 2px 14px rgba(0,0,0,.25)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;font:400 16px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);min-height:100vh;-webkit-tap-highlight-color:transparent}
+#bgfx{position:fixed;inset:0;z-index:-3;background:var(--bg);background-size:cover;background-position:center;background-attachment:fixed}
+#veil{position:fixed;inset:0;z-index:-2;display:none}
+#sparkles{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.sp{position:absolute;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff,0 0 14px #C9B8FF;opacity:0;animation:tw 4s ease-in-out infinite}
+.sp.l{background:#E4DAFF}
+@keyframes tw{0%,100%{opacity:.05;transform:scale(.7)}50%{opacity:.85;transform:scale(1)}}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes breathe{0%,100%{transform:scale(.6)}50%{transform:scale(1)}}
+@keyframes fall{to{transform:translateY(620px) rotate(360deg)}}
+@keyframes pop{0%{transform:scale(.4)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.sp{display:none}}
+.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;background:rgba(249,247,253,.9);backdrop-filter:blur(10px)}
+[data-theme=dark] .top{background:rgba(34,31,58,.9)}
+.brand{font-weight:700;font-size:17px;display:flex;gap:8px;align-items:center}
+.ctrls{display:flex;gap:8px;align-items:center;margin-left:auto}
+main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:12px 16px calc(120px + env(safe-area-inset-bottom,0px))}
+.view{display:none}
+.view.on{display:block;animation:fade .3s ease}
+h1{font-size:26px;margin:8px 0 6px;line-height:1.2;font-weight:700}
+h2{font-size:18px;margin:0 0 10px;line-height:1.3;font-weight:700}
+h3{font-weight:600}
+.muted{color:var(--muted);margin:0 0 12px}
+.card{background:var(--card);border-radius:24px;padding:22px;box-shadow:var(--shadow);margin-bottom:16px}
+.grid{display:grid;gap:16px}
+.grid>.card,.stack .card{margin:0}
+.stack{display:grid;gap:16px;align-content:start}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#day-card{scroll-margin-top:80px}
+.val{font-weight:700;font-size:22px;margin:0 0 4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border:0;border-radius:16px;background:var(--grad);color:#3F3560;font:inherit;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:transparent;color:var(--text);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.block{width:100%}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,textarea:focus-visible{outline:3px solid #9B8CF0;outline-offset:2px}
+fieldset{border:0;padding:0;margin:0 0 20px;min-width:0}
+legend{font-weight:600;margin-bottom:10px;padding:0}
+select,input[type=text],input[type=time],input[type=number]{width:100%;min-height:48px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);color:var(--text);font:inherit;padding:0 14px}
+textarea{width:100%;min-height:84px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);color:var(--text);font:inherit;padding:10px 14px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opts label{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:14px;border:1.5px solid var(--line);cursor:pointer;background:var(--bg)}
+.opts input{position:absolute;opacity:0;width:0;height:0;margin:0}
+.opts label:has(input:checked){border-color:var(--accent);background:var(--card);font-weight:600;box-shadow:inset 0 0 0 1px var(--accent)}
+.opts label:has(input:focus-visible){outline:3px solid #9B8CF0;outline-offset:2px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.tile{position:relative;cursor:pointer;display:block}
+.tile input{position:absolute;opacity:0;width:0;height:0;margin:0}
+.tile span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:78px;padding:8px 4px;text-align:center;font-size:12.5px;font-weight:600;line-height:1.25;border-radius:16px;border:1.5px solid var(--line);background:var(--bg)}
+.tile b{font-size:24px;font-weight:400;line-height:1}
+.tile:has(input:checked) span{border-color:var(--accent);background:var(--card);box-shadow:inset 0 0 0 1px var(--accent)}
+.tile:has(input:focus-visible) span{outline:3px solid #9B8CF0;outline-offset:2px}
+.moods{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mood{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:68px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.mood b{font-size:24px;font-weight:400;line-height:1.1}
+.mood.on{border-color:var(--accent);background:var(--card);box-shadow:inset 0 0 0 1px var(--accent)}
+.err{color:#C2185B;font-weight:600;margin:0 0 12px}
+[data-theme=dark] .err{color:#F8BBD0}
+.res{background:var(--grad);color:#3F3560;border-radius:24px;padding:24px;margin-bottom:16px}
+.res p{margin:0 0 10px}
+.res .est{font-size:21px;font-weight:700;line-height:1.3}
+.warn{background:#FFF3E0;color:#5D3A00;border:1.5px solid #FFB74D}
+[data-theme=dark] .warn{background:#4A3B1E;color:#FFE9C2;border-color:#B07C2E}
+.stages{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.stage{height:10px;border-radius:99px;background:var(--line)}
+.stage.on{background:var(--nav)}
+.stage-lbl{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:14px;color:var(--muted);margin-bottom:10px}
+.stage-lbl .on{color:var(--text);font-weight:700}
+.disc{font-size:15px}
+.disc p{margin:0}
+details{background:var(--bg);border-radius:14px;padding:4px 16px;margin-bottom:10px}
+summary{font-weight:600;cursor:pointer;min-height:44px;display:flex;align-items:center}
+details p{margin:0 0 12px;color:var(--muted)}
+.breath{width:70px;height:70px;border-radius:50%;background:var(--nav);margin-top:8px;animation:breathe 8s ease-in-out infinite}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:40px;padding:0 14px;border-radius:99px;border:0;background:var(--bg);color:var(--text);font:inherit;font-weight:600;font-size:14px;cursor:pointer}
+.msg-form{display:flex;gap:8px;margin-top:12px}
+.msg-form input{flex:1}
+.switch-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.switch-row p{margin:0}
+.sw{position:relative;width:56px;height:32px;border-radius:99px;border:0;background:var(--line);cursor:pointer;flex:none;padding:0}
+.sw::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:transform .3s ease}
+.sw[aria-checked=true]{background:var(--nav)}
+.sw[aria-checked=true]::after{transform:translateX(24px)}
+.chart{display:flex;align-items:flex-end;gap:6px;height:150px;margin-bottom:10px}
+.bar{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;font-size:12px;color:var(--muted)}
+.bar em{font-style:normal;font-size:16px;line-height:1}
+.bar i{display:block;width:100%;max-width:30px;border-radius:10px 10px 4px 4px;background:var(--nav)}
+.avatar{position:relative;width:132px;height:132px;margin:10px auto 18px}
+.av{width:100%;height:100%;border-radius:50%;overflow:hidden;background:var(--grad);display:grid;place-items:center;color:#3F3560;font-size:44px;font-weight:700}
+.av img{width:100%;height:100%;object-fit:cover}
+.av-frame{position:absolute;inset:-12px;width:calc(100% + 24px);height:calc(100% + 24px);pointer-events:none}
+.av-frame svg,.fr svg{width:100%;height:100%}
+.btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:12px}
+.crop{width:240px;height:240px;margin:12px auto;border-radius:50%;overflow:hidden;position:relative;background:#ddd;touch-action:none;cursor:grab}
+.crop img{position:absolute;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.zoom{display:block;margin-bottom:12px}
+.zoom input{width:100%;accent-color:#A99BE0}
+.frames{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.fr{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:14px;border:1.5px solid transparent;background:var(--bg);color:var(--text);font:inherit;font-size:12px;cursor:pointer}
+.fr[aria-pressed=true]{border-color:var(--accent)}
+.fr svg{width:44px;height:44px;flex:none}
+.bgs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.bgo{min-height:60px;border-radius:14px;border:1.5px solid transparent;font:inherit;font-size:13px;font-weight:600;color:#2D2A44;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding:6px;box-shadow:inset 0 0 0 1px var(--line)}
+.bgo[aria-pressed=true]{border-color:var(--accent)}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(5,1fr);height:calc(76px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);background:var(--card);border-radius:24px 24px 0 0;box-shadow:0 -4px 20px rgba(110,95,170,.1)}
+.navbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:none;color:var(--muted);font:inherit;font-size:11.5px;font-weight:600;cursor:pointer;padding:6px 2px;min-height:44px}
+.navbtn.on{color:var(--text);font-weight:700}
+.navbtn.on .i{stroke:#8E7FD1}
+.navbtn.mid{padding-top:36px}
+.fab{position:absolute;left:50%;top:-24px;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;border:4px solid var(--bg);background:var(--grad);color:#3F3560;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 16px rgba(169,155,224,.35)}
+.fab .i{width:26px;height:26px}
+.btn-install{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 14px 0 6px;border:1.5px solid var(--line);border-radius:999px;background:var(--card);color:var(--muted);font:inherit;font-weight:600;font-size:14px;cursor:pointer;flex:none}
+.bi-circ{width:30px;height:30px;border-radius:50%;background:var(--bg);display:grid;place-items:center}
+.bi-circ .i{width:18px;height:18px}
+.btn-install:disabled{opacity:.7;cursor:default}
+.toggle{position:relative;width:96px;height:38px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;padding:0;flex:none}
+.toggle .tl{position:absolute;top:50%;transform:translateY(-50%);left:12px}
+.toggle[data-mode=dark] .tl{left:auto;right:12px}
+.knob{position:absolute;top:3px;left:calc(100% - 33px);width:30px;height:30px;border-radius:50%;background:var(--bg);display:grid;place-items:center;transition:left .3s ease}
+.toggle[data-mode=dark] .knob{left:3px}
+.knob .i{width:18px;height:18px;stroke-width:2.2}
+.knob .sun{stroke:#E0A82E}
+.knob .moon{stroke:#8FB4F0}
+.toggle[data-mode=light] .moon,.toggle[data-mode=dark] .sun{display:none}
+.tip{position:fixed;left:16px;right:16px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:40;max-width:420px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:14px}
+.tip p{margin:0;flex:1}
+.tip .btn{min-height:40px;padding:0 12px}
+.burger{width:44px;height:44px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);display:grid;place-items:center;cursor:pointer;color:var(--text);flex:none}
+@media (max-width:520px){.bi-txt{display:none}.btn-install{padding:0 6px}.toggle{width:84px}.brand{font-size:15px}}
+@media (min-width:768px){
+  .bnav{left:50%;right:auto;transform:translateX(-50%);width:min(680px,calc(100% - 32px));bottom:14px;height:80px;padding-bottom:0;border-radius:28px}
+  main{padding:20px 36px 140px}
+  .grid{grid-template-columns:repeat(3,1fr);align-items:start}
+  .span2{grid-column:span 2}
+  .span3{grid-column:1/-1}
+  .tip{bottom:112px}
+}
+/* Calendario */
+.cal-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.cal-head h2{margin:0;flex:1;text-align:center;text-transform:capitalize;font-size:19px}
+.cbtn{width:44px;height:44px;flex:none;border-radius:50%;border:0;background:var(--bg);color:var(--text);font-size:22px;cursor:pointer}
+.cal-dow,.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cal-dow span{font-size:12px;font-weight:600;color:var(--muted);padding:4px 0}
+.day{position:relative;min-height:52px;border-radius:14px;border:1.5px solid transparent;background:transparent;color:var(--text);font:600 15px/1 Inter,system-ui,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px 0 9px}
+.day.today{border-color:var(--accent)}
+.day.pred{border:1.5px dashed #E89BBB}
+.day.sel{background:var(--grad);color:#3F3560}
+.day em{font-style:normal;font-size:14px;line-height:1}
+.per{position:absolute;left:50%;bottom:5px;transform:translateX(-50%);width:7px;height:7px;border-radius:50%;background:#EC6A9B}
+.per.ligera{opacity:.5}
+.per.fuerte{width:11px;height:7px;border-radius:4px;background:#C2185B}
+.fl{position:absolute;top:5px;right:6px;width:6px;height:6px;border-radius:50%;background:#7FB8E8}
+.sy{position:absolute;top:5px;left:6px;width:6px;height:6px;border-radius:50%;background:#A99BE0}
+.bd{position:absolute;top:1px;left:50%;transform:translateX(-50%);font-size:10px;line-height:1}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:14px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px 8px;border-radius:16px;background:var(--bg)}
+.stat b{font-size:17px;font-weight:700;line-height:1.2;text-transform:capitalize}
+.stat span{font-size:12.5px;color:var(--muted)}
+.stat.wide{grid-column:1/-1}
+.tl{position:relative;height:14px;border-radius:99px;background:var(--line);margin:14px 0 4px}
+.tl-w{position:absolute;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,#F8CFE0,#EC9FBF)}
+.tl-n{position:absolute;left:-2px;top:-3px;width:20px;height:20px;border-radius:50%;background:var(--accent);border:3px solid var(--card)}
+.tl-l{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px}
+.steps{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.steps span{font-size:13px;font-weight:600;padding:4px 10px;border-radius:99px;background:var(--bg);color:var(--muted)}
+.steps span.ok{background:#D6F0E4;color:#245A44}
+/* Pronóstico y tips */
+.pron-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.pron-top b{font-size:36px;line-height:1;font-weight:700}
+.pill{display:inline-block;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:700}
+.pill.baja{background:#D6F0E4;color:#245A44}
+.pill.media{background:#FFF0CF;color:#6B4A00}
+.pill.alta{background:#FAD4E4;color:#7A2450}
+.pbar{height:14px;border-radius:99px;background:var(--line);overflow:hidden}
+.pbar i{display:block;height:100%;width:var(--w,0%);background:linear-gradient(90deg,#BDE8D6,#BFD9F2 45%,#F2B6CF);border-radius:99px;transition:width .5s ease}
+.pbar-l{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin:6px 0 12px}
+.tipc{background:var(--bg);border-radius:16px;padding:12px 14px;margin-bottom:10px}
+.tipc b{display:block;margin-bottom:4px}
+.tipc p{margin:0;color:var(--muted);font-size:14.5px}
+.foot{font-size:12.5px;color:var(--muted);margin:4px 0 0}
+#day-tips:empty{display:none}
+#day-tips{margin-top:16px}
+/* Rutinas */
+.notif{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--bg);border-radius:16px;padding:12px 14px;margin-bottom:14px}
+.notif p{margin:0;flex:1;min-width:200px}
+#rut-list{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.rut{background:var(--bg);border-radius:18px;padding:14px}
+.rut-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.rut-h h3{margin:0;flex:1;font-size:16px}
+.rut-e{font-size:26px;line-height:1}
+.rdel{min-height:40px;padding:0 10px}
+.rut-p,.rmini{display:flex;align-items:center;gap:12px}
+.rmini{margin-bottom:10px}
+.rmini>span{font-size:22px}
+.rut-m{flex:1;min-width:0}
+.rut-m b{display:block;font-size:15px;margin-bottom:4px}
+.rmini small{font-weight:600;color:var(--muted);margin-left:6px}
+.rut .muted{margin:8px 0 0;font-size:14px}
+.rbar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.rbar i{display:block;height:100%;width:var(--w,0%);background:var(--nav);border-radius:99px;transition:width .3s ease}
+.rbtn{width:44px;height:44px;flex:none;border-radius:50%;border:0;background:var(--grad);color:#3F3560;font:inherit;font-size:24px;font-weight:600;line-height:1;cursor:pointer}
+.rbtn.minus{background:var(--line);color:var(--text)}
+.rbtn:active{transform:scale(.94)}
+.rut-cfg{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0}
+.rut-cfg label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;flex:1;min-width:100px}
+fieldset.miss{outline:2px dashed #F06292;outline-offset:8px;border-radius:12px}
+fieldset.miss legend{color:#C2185B}
+[data-theme=dark] fieldset.miss legend{color:#F8BBD0}
+/* Celebraciones */
+#bday{position:fixed;inset:0;z-index:90;background:rgba(40,30,70,.45);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.bday-c{position:relative;overflow:hidden;max-width:380px;width:100%;text-align:center;margin:auto}
+.bday-c>*:not(.confetti){position:relative;z-index:1}
+.confetti{position:absolute;inset:0;pointer-events:none;z-index:0}
+.cf{position:absolute;top:-28px;font-size:20px;opacity:.9;animation:fall 4s linear infinite}
+.bday-c .big{font-size:60px;line-height:1.1;animation:pop .6s ease}
+.gifts{display:grid;gap:8px;margin:12px 0}
+.gift{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:14px;padding:10px 12px;text-align:left}
+.gift>span{font-size:26px;line-height:1}
+.gift small{color:var(--muted)}
+.av-badge{position:absolute;right:-6px;bottom:-6px;width:42px;height:42px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center;font-size:22px}
+.fest{display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:16px;padding:10px 12px;margin-bottom:8px}
+.fest>span{font-size:26px}
+.fest>div{flex:1;min-width:0}
+.fest small{display:block;color:var(--muted)}
+.fest .btn{min-height:40px;padding:0 14px;font-size:14px}
+/* Menú, bloqueo y diálogo */
+.scrim{position:fixed;inset:0;background:rgba(20,15,50,.35);z-index:50}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(300px,86vw);background:var(--card);z-index:51;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px 24px;box-shadow:-10px 0 30px rgba(0,0,0,.2);transform:translateX(105%);transition:transform .3s ease;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.drawer.on{transform:none}
+.dr-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.dr-item{min-height:48px;text-align:left;border:0;border-radius:14px;background:var(--bg);color:var(--text);font:inherit;font-weight:600;padding:0 14px;cursor:pointer}
+.dr-item.danger{color:#C2185B}
+#lock,#dlg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+#lock{z-index:200;background:var(--bg)}
+#dlg{z-index:150;background:rgba(20,15,50,.45)}
+.lockc,.dlg{width:100%;max-width:380px;margin:auto}
+.dlg .btns .btn{flex:1}
+.pat{position:relative;width:min(260px,70vw);aspect-ratio:1;margin:16px auto;display:grid;grid-template-columns:repeat(3,1fr);touch-action:none;user-select:none;-webkit-user-select:none}
+.pat svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.pat polyline{stroke:var(--accent);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
+.pat[data-state=err] polyline{stroke:#E57393}
+.pdot{display:grid;place-items:center;border:0;background:none;padding:0;cursor:pointer}
+.pdot i{width:16px;height:16px;border-radius:50%;background:var(--line);box-shadow:0 0 0 0 transparent;transition:box-shadow .15s,background .15s}
+.pdot.on i{background:var(--accent);box-shadow:0 0 0 10px rgba(169,155,224,.28)}
+.pat[data-state=err] .pdot.on i{background:#E57393;box-shadow:0 0 0 10px rgba(229,115,147,.28)}
+.pdot:focus-visible{outline:3px solid #9B8CF0;outline-offset:-6px;border-radius:50%}
+.mapa{width:100%;height:auto;display:block;margin:4px 0}
+.mapa text{font:600 12px Inter,sans-serif;fill:var(--muted)}
+@media (max-width:380px){.frames{grid-template-columns:repeat(3,1fr)}.moods{gap:6px}}
+</style>
+</head>
+<body>
+<div id="bgfx"></div><div id="veil"></div><div id="sparkles"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v15H6.5A2.5 2.5 0 0 0 4 19.5zM4 19.5V22h16"/></symbol>
+<symbol id="i-help" viewBox="0 0 24 24"><path d="M9 9a3 3 0 1 1 4 2.8c-.7.3-1 .9-1 1.7V15M12 18.5v.01"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.2-4 4-6 8-6s6.8 2 8 6"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1-.5-8 6 6 0 0 1 11.6 1.5A3.5 3.5 0 0 1 17.5 18z"/><path d="M12 11v6M9.5 14.5 12 17l2.5-2.5"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+<symbol id="i-cam" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+<symbol id="i-img" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="brand"><span aria-hidden="true">🌙</span> Estimar menarca</div>
+  <div class="ctrls">
+    <button class="btn-install" type="button"><span class="bi-circ"><svg class="i"><use href="#i-cloud"/></svg></span><span class="bi-txt">Instalar app</span></button>
+    <button class="toggle" type="button" role="switch" aria-checked="false" data-mode="light" aria-label="Cambiar entre modo claro y oscuro"><span class="tl">Claro</span><span class="knob"><svg class="i sun"><use href="#i-sun"/></svg><svg class="i moon"><use href="#i-moon"/></svg></span></button>
+    <button class="burger" id="burger" type="button" aria-label="Abrir menú" aria-expanded="false"><svg class="i"><use href="#i-menu"/></svg></button>
+  </div>
+</header>
+
+<main>
+  <!-- Inicio -->
+  <section class="view on" id="v-inicio">
+    <h1 class="sr">Mi calendario</h1>
+    <div class="grid">
+      <div class="card hoy">
+        <h2>Hoy</h2>
+        <p class="val" id="hoy-animo">Aún sin registrar</p>
+        <p class="muted" id="hoy-etapa" style="margin:0">Haz una estimación</p>
+        <p class="muted" id="hoy-bday" style="margin:6px 0 0" hidden></p>
+        <button class="btn ghost" data-go="estimar" type="button" style="margin-top:14px">Estimar mi etapa</button>
+      </div>
+
+      <div class="card span2" id="pron-card">
+        <h2>Pronóstico de los próximos 7 días</h2>
+        <div id="pron"></div>
+      </div>
+
+      <div class="card span2" id="cal-card">
+        <h2 class="sr">Calendario</h2>
+        <p class="muted" style="margin:0 0 12px">Toca un día para anotar cómo estuvo.</p>
+        <div class="cal-head"><button class="cbtn" id="cal-prev" type="button" aria-label="Mes anterior">‹</button><h2 id="cal-title"></h2><button class="cbtn" id="cal-next" type="button" aria-label="Mes siguiente">›</button></div>
+        <div class="cal-dow"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+        <div class="cal" id="cal"></div>
+        <div class="legend"><span><i style="background:#EC6A9B"></i>Menstruación</span><span><i style="background:#C2185B"></i>Fuerte</span><span><i style="background:#7FB8E8"></i>Flujo o manchas</span><span><i style="background:#A99BE0"></i>Molestias</span><span><i style="border:1.5px dashed #E89BBB"></i>Posible próxima</span></div>
+      </div>
+
+      <div class="stack">
+        <div class="card" id="tips-card">
+          <h2>Tu cuerpo te dice</h2>
+          <div id="tips"></div>
+          <p class="foot">Información general basada en KidsHealth y ACOG. No reemplaza a tu pediatra.</p>
+        </div>
+        <div class="card" id="menarca-card">
+          <h2>Mi menarca</h2>
+          <div id="menarca"></div>
+        </div>
+      </div>
+
+      <div class="card span2" id="day-card">
+        <h2 id="day-title"></h2>
+        <fieldset><legend>¿Te vino la menstruación?</legend><div class="opts" id="reg-per"></div></fieldset>
+        <fieldset id="int-box" hidden><legend>¿Qué tan fuerte fue?</legend><div class="opts" id="reg-int"></div></fieldset>
+        <fieldset><legend>¿Cómo te sentiste?</legend><div class="moods" id="reg-moods"></div></fieldset>
+        <fieldset><legend>¿Notaste alguna señal en tu cuerpo?</legend><div class="tiles" id="reg-mol"></div></fieldset>
+        <fieldset><legend>¿Cómo fue tu flujo?</legend><div class="tiles" id="reg-flu"></div></fieldset>
+        <textarea id="reg-nota" maxlength="200" placeholder="Nota (opcional)" aria-label="Nota"></textarea>
+        <div id="day-tips"></div>
+        <p class="muted" id="reg-ok" hidden style="margin:10px 0 0;font-weight:600" role="status"></p>
+        <div class="btns" style="margin:14px 0 0;justify-content:flex-start"><button class="btn" id="reg-save" type="button">Guardar este día</button><button class="btn ghost" id="reg-del" type="button">Borrar este día</button></div>
+      </div>
+
+      <div class="stack">
+        <div class="card" id="ritmo-card">
+          <h2>Mi ritmo</h2>
+          <div id="ritmo"></div>
+          <p class="muted" style="margin:0;font-size:14px">Esto es solo una orientación, no un diagnóstico.</p>
+        </div>
+        <div class="card" id="rut-card">
+          <h2>Rutinas de hoy</h2>
+          <div id="rut-hoy"></div>
+          <button class="btn ghost block" data-go="perfil" type="button">Cambiar mis rutinas</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Mi ánimo de la semana</h2>
+        <div class="chart" id="chart"></div>
+        <p class="muted" id="hist-vacio">Aún no hay ánimos registrados. Elige cómo te sentiste en el calendario.</p>
+        <button class="btn ghost block" id="hist-del" type="button">Borrar mis ánimos</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Estimar -->
+  <section class="view" id="v-estimar">
+    <div class="card" id="card-form" style="max-width:640px">
+      <h2>Estimar</h2>
+      <p class="muted">Responde con calma. No hay respuestas buenas ni malas.</p>
+      <form id="f" novalidate>
+        <fieldset>
+          <legend>¿Cuántos años tienes?</legend>
+          <div class="row">
+            <select name="edad" id="edad" aria-label="Años"></select>
+            <select name="meses" id="meses" aria-label="Meses"></select>
+          </div>
+        </fieldset>
+        <div id="qs"></div>
+        <p class="err" id="err" hidden>Responde todas las preguntas para ver tu estimación.</p>
+        <button class="btn block" type="submit">Ver mi estimación</button>
+      </form>
+    </div>
+    <div id="resultado" hidden style="max-width:640px"></div>
+  </section>
+
+  <!-- Qué esperar -->
+  <section class="view" id="v-queesperar">
+    <h1>Qué esperar</h1>
+    <p class="muted">Cambios normales de la pubertad, explicados con calma.</p>
+    <div class="grid" id="cards-que"></div>
+  </section>
+
+  <!-- Preguntas -->
+  <section class="view" id="v-preguntas">
+    <h1>Preguntas frecuentes</h1>
+    <p class="muted">Lo que muchas niñas se preguntan.</p>
+    <div class="card">
+      <details><summary>¿Es normal que me llegue antes o después que a mis amigas?</summary><p>Sí. Cada cuerpo tiene su propio ritmo. Lo normal va de los 9 a los 16 años.</p></details>
+      <details><summary>¿Duele la menstruación?</summary><p>Puede haber molestias leves en la parte baja del abdomen. Si el dolor es muy fuerte o no te deja hacer tus cosas, avisa a un adulto de confianza.</p></details>
+      <details><summary>¿Cada cuánto llega?</summary><p>Al principio puede ser irregular. En las adolescentes, lo normal es que pasen entre 21 y 45 días entre una y otra. Con el tiempo se va haciendo más regular.</p></details>
+      <details><summary>¿Qué hago si me llega en la escuela?</summary><p>Usa una toalla sanitaria si la tienes, avisa a una persona de confianza, como una maestra o una amiga, y pide ayuda. Es algo normal que le pasa a muchas niñas.</p></details>
+      <details><summary>¿Va a doler la primera vez que me venga?</summary><p>Puede que sientas molestias leves, como cólicos en la parte baja del abdomen o cansancio. Hay niñas que casi no sienten nada y otras que sienten un poco más. Si el dolor es muy fuerte, no te deja hacer tus cosas o dura mucho, avisa a un adulto de confianza y habla con tu pediatra.</p></details>
+      <details><summary>¿Cómo se ve la menstruación?</summary><p>Suele ser sangre de color rojo o café. Al principio puede ser poca y solo manchar, y después aumentar unos días. A veces tiene pequeños coágulos, lo cual es normal. Cada niña tiene su propio patrón.</p></details>
+      <details><summary>¿Cómo sé que me va a venir pronto?</summary><p>Algunas señales son que te crezcan las mamas, que te salga vello, que tengas un estirón y que notes flujo blanco o transparente. La primera menstruación suele llegar unos 2 años después de que empiezan a crecer las mamas. Nadie puede decir el día exacto, pero si anotas en tu calendario, con el tiempo verás tu propio ritmo.</p></details>
+      <details><summary>¿Qué es el flujo blanco?</summary><p>Es un líquido blanco o transparente que indica que el cuerpo se está preparando. Suele aparecer unos 6 meses antes de la primera menstruación. Si cambia de color, huele fuerte o pica, consulta a tu pediatra.</p></details>
+      <details><summary>¿Cuándo debo consultar al pediatra?</summary><p>Si a los 15 años aún no te llegó, si el periodo dura más de 7 días, si empapas una toalla en menos de 2 horas, si pasan más de 45 días o menos de 21 entre un periodo y otro, o si el dolor es muy fuerte.</p></details>
+    </div>
+  </section>
+
+  <!-- Mi perfil -->
+  <section class="view" id="v-perfil">
+    <h1>Mi perfil</h1>
+    <p class="muted">Todo se guarda solo en este dispositivo. Ninguna foto sale de aquí.</p>
+    <div class="grid">
+      <div class="card">
+        <h2>Foto</h2>
+        <div class="avatar"><div class="av" id="av"></div><div class="av-frame" id="av-frame"></div><span class="av-badge" id="av-badge" hidden></span></div>
+        <div class="btns">
+          <button class="btn" id="b-up" type="button"><svg class="i"><use href="#i-img"/></svg>Subir foto</button>
+          <button class="btn ghost" id="b-cam" type="button"><svg class="i"><use href="#i-cam"/></svg>Tomar foto</button>
+          <button class="btn ghost" id="b-nofoto" type="button">Quitar</button>
+        </div>
+        <input type="file" id="f-up" accept="image/*" hidden>
+        <input type="file" id="f-cam" accept="image/*" capture="user" hidden>
+        <div id="crop-box" hidden>
+          <p class="muted" style="text-align:center">Arrastra la foto y ajusta el zoom.</p>
+          <div class="crop" id="crop"><img id="crop-img" alt=""></div>
+          <label class="zoom">Zoom <input type="range" id="zoom" min="1" max="3" step="0.02" value="1"></label>
+          <div class="btns">
+            <button class="btn" id="crop-save" type="button">Usar esta foto</button>
+            <button class="btn ghost" id="crop-cancel" type="button">Cancelar</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Marco</h2>
+        <div class="frames" id="frames"></div>
+      </div>
+      <div class="card">
+        <h2>Apodo o avatar</h2>
+        <p class="muted">Opcional. No escribas tu nombre real.</p>
+        <input type="text" id="nick" maxlength="20" placeholder="Por ejemplo: Luna" aria-label="Apodo">
+      </div>
+      <div class="card span2" id="card-bday">
+        <h2>Mi cumpleaños 🎂</h2>
+        <p class="muted">Cuando llegue tu día te felicito y te doy regalos diferentes cada año. Solo guardo el día y el mes, y solo en este dispositivo.</p>
+        <div class="row" style="margin-bottom:10px"><select id="bd-d" aria-label="Día"></select><select id="bd-m" aria-label="Mes"></select></div>
+        <p class="muted" id="bday-info" role="status" style="margin:0 0 12px"></p>
+        <div class="btns" style="justify-content:flex-start"><button class="btn ghost" id="bday-test" type="button">Ver cómo será la sorpresa</button><button class="btn ghost" id="bday-del" type="button" hidden>Quitar fecha</button></div>
+        <h3 style="margin:12px 0 8px;font-size:16px">Mis regalos</h3>
+        <div class="gifts" id="regalos"></div>
+      </div>
+      <div class="card">
+        <h2>Fiestas del año 🎉</h2>
+        <p class="muted">Si abres la app en estas fechas, recibes un regalo especial que se queda en tu perfil.</p>
+        <div id="fest-list"></div>
+      </div>
+      <div class="card span3" id="card-rut">
+        <h2>Mis rutinas</h2>
+        <p class="muted">Marca lo que haces cada día, por ejemplo beber agua. Si quieres, la página te manda un aviso para recordártelo.</p>
+        <div class="notif"><p id="notif-txt"></p><button class="btn" id="notif-on" type="button">Activar avisos</button><button class="btn ghost" id="notif-test" type="button">Probar aviso</button></div>
+        <div id="rut-list"></div>
+        <h3 style="margin:16px 0 8px;font-size:16px">Agregar rutina</h3>
+        <div class="chips" id="rut-add" style="margin-bottom:12px"></div>
+        <form class="msg-form" id="rut-form"><input type="text" id="rut-new" maxlength="30" placeholder="Mi propia rutina, por ejemplo: leer 10 minutos" aria-label="Nueva rutina"><button class="btn" type="submit">Agregar</button></form>
+      </div>
+      <div class="card">
+        <h2>Fondo</h2>
+        <div class="bgs" id="bgs"></div>
+        <button class="btn ghost block" id="bg-up" type="button">Subir imagen de fondo</button>
+        <button class="btn ghost block" id="bg-del" type="button" style="margin-top:10px" hidden>Quitar mi imagen</button>
+        <input type="file" id="f-bg" accept="image/*" hidden>
+        <p class="muted" id="bg-msg" role="status" style="margin:10px 0 0"></p>
+      </div>
+      <div class="card">
+        <h2>Brillitos</h2>
+        <div class="switch-row">
+          <p class="muted">Destellos suaves sobre el fondo</p>
+          <button class="sw" id="sw-sp" type="button" role="switch" aria-checked="false" aria-label="Brillitos"></button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Borrar</h2>
+        <p class="muted">Se quitan la foto, el marco, el fondo, el apodo y los brillitos.</p>
+        <button class="btn ghost block" id="b-borrar" type="button"><svg class="i"><use href="#i-trash"/></svg>Borrar mi perfil</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav class="bnav" id="bnav" aria-label="Principal">
+  <button class="fab" data-go="registro" data-today="1" aria-label="Registrar hoy"><svg class="i"><use href="#i-plus"/></svg></button>
+</nav>
+
+<div class="card tip" id="tip" role="status" hidden>
+  <p id="tip-txt"></p>
+  <button class="btn ghost" id="tip-x" type="button" aria-label="Cerrar">✕</button>
+</div>
+
+<aside class="drawer" id="drawer" aria-label="Menú">
+  <div class="dr-head"><div class="brand"><span aria-hidden="true">🌙</span> Menú</div><button class="btn ghost" id="dr-x" type="button" aria-label="Cerrar menú" style="min-height:44px;padding:0 14px">✕</button></div>
+  <button class="dr-item" data-go="inicio" type="button">Mi calendario</button>
+  <button class="dr-item" data-go="registro" data-today="1" type="button">Registrar el día</button>
+  <button class="dr-item" data-go="estimar" type="button">Estimar menarca</button>
+  <button class="dr-item" data-go="perfil" type="button">Mis rutinas y perfil</button>
+  <button class="dr-item" id="dr-lock" type="button">Bloquear ahora</button>
+  <button class="dr-item" id="dr-chg" type="button">Cambiar mi patrón</button>
+  <button class="dr-item danger" id="dr-del" type="button">Eliminar todos mis datos</button>
+</aside>
+<div class="scrim" id="scrim" hidden></div>
+
+<!-- Pantalla de bloqueo con patrón (visible hasta que se desbloquee) -->
+<div id="lock">
+  <div class="card lockc">
+    <div class="brand" style="justify-content:center;margin-bottom:6px"><span aria-hidden="true">🌙</span> Estimar menarca</div>
+    <h2 id="lock-t" style="text-align:center;margin-top:14px"></h2>
+    <p class="muted" id="lock-p" style="text-align:center;margin-bottom:0"></p>
+    <div class="pat" id="pat"></div>
+    <p class="err" id="lock-err" role="alert" hidden style="text-align:center"></p>
+    <button class="btn ghost block" id="lock-ok" type="button" style="min-height:40px;font-size:14px">Confirmar patrón (con teclado)</button>
+    <button class="btn ghost block" id="lock-cancel" type="button" hidden style="margin-top:10px">Cancelar</button>
+    <button class="btn ghost block" id="lock-reset" type="button" hidden style="margin-top:10px">Olvidé mi patrón: borrar todo</button>
+  </div>
+</div>
+
+<div id="bday" hidden>
+  <div class="card bday-c" role="dialog" aria-modal="true" aria-labelledby="bday-t">
+    <div class="confetti" id="confetti" aria-hidden="true"></div>
+    <div class="big" id="bday-e" aria-hidden="true">🎂</div>
+    <h2 id="bday-t"></h2>
+    <p id="bday-m" style="margin:0"></p>
+    <div class="gifts" id="bday-g"></div>
+    <button class="btn block" id="bday-ok" type="button">¡Gracias! 💖</button>
+    <button class="btn ghost block" id="bday-use" type="button" style="margin-top:10px">Estrenar mis regalos</button>
+  </div>
+</div>
+<div id="dlg" hidden>
+  <div class="card dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-t">
+    <h2 id="dlg-t"></h2>
+    <p class="muted" id="dlg-p"></p>
+    <div class="btns"><button class="btn" id="dlg-ok" type="button"></button><button class="btn ghost" id="dlg-no" type="button">Cancelar</button></div>
+  </div>
+</div>
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const store={
+  get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},
+  del(k){try{localStorage.removeItem(k)}catch(e){}}
+};
+const RM=matchMedia('(prefers-reduced-motion: reduce)');
+const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const uniq=a=>a.filter((k,i)=>a.indexOf(k)===i);
+
+const NAV=[['inicio','Calendario','i-cal'],['estimar','Estimar','i-spark'],['queesperar','Qué esperar','i-book'],['preguntas','Preguntas','i-help'],['perfil','Mi perfil','i-user']];
+const MOODS=[
+ {n:'Feliz',e:'😊',v:6},{n:'Tranquila',e:'🌷',v:5},{n:'Cansada',e:'😴',v:2},{n:'Nerviosa',e:'😬',v:3},
+ {n:'Triste',e:'😢',v:1},{n:'Enojada',e:'😠',v:2},{n:'Confundida',e:'🤔',v:3},{n:'Sensible',e:'🥺',v:2}
+];
+const CARDS=[
+ {id:'mamas',t:'Crecimiento de mamas',p:'Suele ser uno de los primeros cambios. Pueden crecer poco a poco, a veces una más que la otra, y dar un poco de sensibilidad. Es normal.'},
+ {id:'vello',t:'Vello',p:'Pueden salir vellitos en las axilas o en la zona púbica, al principio finitos y claros. Con el tiempo crecen y es parte del desarrollo.'},
+ {id:'sudor',t:'Sudoración y olor',p:'El cuerpo suda más y el olor cambia un poco. Bañarte a diario y usar desodorante ayuda mucho.'},
+ {id:'humor',t:'Cambios de humor',p:'Las hormonas pueden hacer que los ánimos cambien rápido: un día alegre y otro día enojada o triste. Si te sientes mal por mucho tiempo, cuéntaselo a alguien de confianza.'},
+ {id:'flujo',t:'Flujo blanco o transparente',p:'Puede aparecer un flujo blanco o transparente en la ropa interior. Es señal de que el cuerpo se está preparando. Si cambia de color, huele fuerte o te molesta, consulta a tu pediatra.'},
+ {id:'toallas',t:'Cómo usar una toalla sanitaria',p:'Pégala en el centro del calzón y cámbiala cada 4 a 6 horas o cuando se llene. Lávate las manos antes y después, y guarda una en tu mochila para estar tranquila.'}
+];
+const STAGES=['Inicio','En camino','Cerca'];
+const STAGE_TXT=['Los cambios pueden estar empezando.','El cuerpo se está preparando poco a poco.','La menstruación podría llegar en los próximos meses.'];
+const DIAS=['D','L','M','X','J','V','S'];
+const star=(cx,cy,R,r,f)=>{let p=[];for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,q=i%2?r:R;p.push((cx+q*Math.cos(a)).toFixed(1)+','+(cy+q*Math.sin(a)).toFixed(1))}return `<polygon points="${p.join(' ')}" fill="${f}" stroke="#fff" stroke-width="1"/>`};
+const heart=(x,y,s,f)=>`<path transform="translate(${x},${y}) scale(${s})" d="M10 18C-2 10 0 2 5 3c2 0 4 2 5 3 1-1 3-3 5-3 5-1 7 7-5 15z" fill="${f}"/>`;
+const FR={
+ none:{l:'Sin marco',s:''},
+ circulo:{l:'Círculo',s:'<circle cx="50" cy="50" r="46" fill="none" stroke="#9B8CF0" stroke-width="4"/>'},
+ flores:{l:'Flores',s:[0,60,120,180,240,300].map(a=>{const r=a*Math.PI/180;return `<circle cx="${(50+47*Math.cos(r)).toFixed(1)}" cy="${(50+47*Math.sin(r)).toFixed(1)}" r="8" fill="#F9A8D4" stroke="#fff" stroke-width="1.5"/>`}).join('')},
+ estrellas:{l:'Estrellas',s:[0,72,144,216,288].map(a=>{const r=(a-90)*Math.PI/180;return star(50+48*Math.cos(r),50+48*Math.sin(r),7,3.2,'#FFD97A')}).join('')},
+ corazon:{l:'Corazón',s:[45,135,225,315].map(a=>{const r=a*Math.PI/180;return heart((50+48*Math.cos(r)-10).toFixed(1),(50+48*Math.sin(r)-10).toFixed(1),.9,'#F06292')}).join('')},
+ luna:{l:'Luna',s:'<path d="M86 6a9 9 0 1 0 8 14 7 7 0 1 1-8-14z" fill="#FFD97A"/><circle cx="8" cy="20" r="2.5" fill="#fff"/><circle cx="14" cy="80" r="2" fill="#fff"/><circle cx="90" cy="78" r="2.5" fill="#fff"/>'},
+ mariposa:{l:'Mariposa',s:'<ellipse cx="10" cy="22" rx="10" ry="13" transform="rotate(-30 10 22)" fill="#C4B5FD"/><ellipse cx="90" cy="22" rx="10" ry="13" transform="rotate(30 90 22)" fill="#C4B5FD"/><ellipse cx="14" cy="72" rx="7" ry="9" transform="rotate(25 14 72)" fill="#F9A8D4"/><ellipse cx="86" cy="72" rx="7" ry="9" transform="rotate(-25 86 72)" fill="#F9A8D4"/>'}
+};
+const BG={
+ lavanda:{l:'Lavanda',v:'#F9F7FD'},
+ crema:{l:'Crema',v:'#FBF6EC'},
+ 'lila-rosa':{l:'Lila a rosa',v:'linear-gradient(160deg,#EFE9FF,#FDE7F1)'},
+ 'menta-azul':{l:'Menta a azul',v:'linear-gradient(160deg,#E3F8EF,#E2EEFB)'},
+ propio:{l:'Fondo propio',v:'#fff'}
+};
+const YN3=[['si','Sí'],['no','No'],['nose','No sé']],YN=[['si','Sí'],['no','No']];
+const QS=[
+ ['mamas','¿Ya notas que te están creciendo las mamas?',YN3],
+ ['vello','¿En qué zona te ha salido vello?',[['ninguno','Todavía no'],['axilas','Solo en las axilas'],['publica','Solo en la zona púbica'],['ambas','En axilas y zona púbica'],['nose','No sé']]],
+ ['crece','¿Cuánto creciste de estatura en el último año?',[['menos4','Menos de 4 cm'],['m4a7','De 4 a 7 cm'],['mas7','Más de 7 cm'],['nose','No sé']]],
+ ['piel','¿Te han salido granitos o notas más olor corporal?',YN3],
+ ['forma','¿Tu cuerpo ha empezado a cambiar de forma (caderas o cintura)?',YN3],
+ ['familia','¿A qué edad le llegó la menstruación a tu mamá o a tu hermana mayor?',[['menor11','Antes de los 11 años'],['11a12','Entre 11 y 12 años'],['mas13','A los 13 años o después'],['nose','No sé']]],
+ ['flujo','¿Has notado flujo o manchas en tu ropa interior?',YN]
+];
+
+/* ---------- Navegación ---------- */
+function go(v){
+  const reg=v==='registro'; if(reg) v='inicio';
+  if(!$('#v-'+v)) return;
+  $$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
+  $$('.navbtn').forEach(b=>b.classList.toggle('on',b.dataset.go===v));
+  window.scrollTo(0,0);
+  if(v==='inicio') renderHome();
+  if(v==='perfil') renderPerfil();
+  if(reg) $('#day-card').scrollIntoView({behavior:RM.matches?'auto':'smooth',block:'start'});
+}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-go]'); if(!t) return; if(t.dataset.today){selDay=iso(new Date());calMonth=new Date()} closeDrawer(); go(t.dataset.go)});
+function mkNav([v,t,i]){const b=document.createElement('button');b.className='navbtn';b.dataset.go=v;if(v==='queesperar')b.classList.add('mid');b.innerHTML=`<svg class="i"><use href="#${i}"/></svg><span>${t}</span>`;return b}
+
+/* ---------- Estimación ---------- */
+const addM=(d,m)=>new Date(d.getTime()+m*30.44*864e5);
+const monthYear=d=>d.toLocaleDateString('es',{month:'long',year:'numeric'});
+function fechasTxt(a,b){
+  const now=new Date();
+  if(b<=0) return 'Podría llegar en cualquier momento.';
+  if(b<=1) return 'Podría llegar en las próximas semanas.';
+  return a<=0.5?`Más o menos desde ya hasta ${monthYear(addM(now,b))}.`:`Más o menos entre ${monthYear(addM(now,a))} y ${monthYear(addM(now,b))}.`;
+}
+function rangoTxt(a,b){
+  if(b<=24) return `entre ${Math.round(a)} y ${Math.round(b)} meses`;
+  const f=x=>(Math.round(x/6)/2).toString().replace('.',',');
+  return `entre ${f(a)} y ${f(b)} años`;
+}
+function estimar(d){
+  const pts={si:2,nose:1,no:0}, sn={si:1,nose:.5,no:0};
+  const vello={ninguno:0,axilas:1,publica:2,ambas:2,nose:.5}[d.vello];
+  const crece={mas7:2,m4a7:1.5,menos4:0,nose:.5}[d.crece];
+  const fam={menor11:1,'11a12':0,mas13:-1,nose:0}[d.familia];
+  const s=pts[d.mamas]+vello+crece+sn[d.piel]+sn[d.forma];
+  const ageM=(+d.edad||12)*12+(+d.meses||0);
+  let c=Math.max(4,36-s*5-fam*4);
+  c=Math.round(0.75*c+0.25*Math.max(3,150-ageM));
+  let wMin=Math.max(0,c-6), wMax=c+6, etapa=s>=5?2:s>=2.5?1:0;
+  if(d.flujo==='si'){etapa=2;wMin=0;wMax=12}
+  wMax=Math.min(wMax,Math.max(6,192-ageM));
+  wMin=Math.min(wMin,Math.max(0,wMax-6));
+  return {etapa,wMin,wMax,flujo:d.flujo==='si',rango:rangoTxt(wMin,wMax)};
+}
+function mapaSvg(r){
+  const x0=24,x1=296,M=Math.max(24,Math.ceil((r.wMax+6)/6)*6);
+  const X=m=>x0+(x1-x0)*Math.min(m,M)/M;
+  const lab=m=>{if(m===0)return 'Hoy';if(m>=12&&m%6===0){const y=m/12;return y===1?'1 año':`${String(y).replace('.',',')} años`}return `${m} meses`};
+  const a=X(r.wMin),b=X(r.wMax);
+  return `<svg class="mapa" viewBox="0 0 320 130" role="img" aria-label="Mapa de cuándo podría llegar tu periodo">
+<defs><linearGradient id="gm" x1="0" x2="1"><stop offset="0" stop-color="#6FD3A4"/><stop offset="1" stop-color="#6FA8D6"/></linearGradient></defs>
+<rect x="${x0}" y="58" width="${x1-x0}" height="14" rx="7" fill="url(#gm)" opacity=".55"/>
+<rect x="${a}" y="42" width="${Math.max(12,b-a)}" height="46" rx="12" fill="#F06292" fill-opacity=".35" stroke="#F06292" stroke-width="2"/>
+<circle cx="${x0}" cy="65" r="7" fill="#A99BE0"/>
+<text x="${(a+b)/2}" y="34" text-anchor="middle">Ventana probable</text>
+<text x="${x0}" y="108" text-anchor="start">${lab(0)}</text>
+<text x="${(x0+x1)/2}" y="108" text-anchor="middle">${lab(M/2)}</text>
+<text x="${x1}" y="108" text-anchor="end">${lab(M)}</text>
+</svg>`;
+}
+function showResult(r,edad){
+  const box=$('#resultado');
+  const sent=r.flujo?'Es probable que tu primera menstruación ya haya empezado o esté muy cerca.':`Es probable que tu primera menstruación llegue ${r.rango}.`;
+  box.innerHTML=
+    (r.flujo?'<div class="card warn"><p style="margin:0">Probablemente ya estás cerca o ya empezó tu primera menstruación. Conviene hablar con un adulto de confianza, como tu mamá, tu papá o una maestra.</p></div>':'')+
+    `<div class="res"><p>Tu estimación</p><p class="est">${sent}</p><p>${fechasTxt(r.wMin,r.wMax)}</p><p>Cada cuerpo tiene su propio ritmo. No existe una fecha "correcta" para que llegue.</p></div>`+
+    `<div class="card"><h2>Tu mapa</h2>${mapaSvg(r)}<p class="muted" style="margin:6px 0 0;font-size:14px">La zona rosa muestra cuándo podría llegar según tus respuestas. Si algo cambia, vuelve a responder.</p></div>`+
+    `<div class="card"><h2>Etapa de la pubertad</h2><div class="stages">${[0,1,2].map(i=>`<div class="stage${i<=r.etapa?' on':''}"></div>`).join('')}</div><div class="stage-lbl">${STAGES.map((s,i)=>`<span class="${i===r.etapa?'on':''}">${s}</span>`).join('')}</div><p class="muted" style="margin:0">${STAGE_TXT[r.etapa]}</p></div>`+
+    (edad>=15&&!r.flujo?'<div class="card"><p style="margin:0">Si ya tienes 15 años o más y todavía no te ha llegado la menstruación, conviene comentarlo con tu pediatra.</p></div>':'')+
+    '<div class="card disc"><p>Esta es una estimación, no un diagnóstico. Si tienes dudas sobre tu desarrollo, habla con un adulto de confianza o con tu pediatra.</p></div>'+
+    '<button class="btn ghost block" id="again" type="button">Hacer otra estimación</button>';
+  box.hidden=false;
+  $('#card-form').hidden=true;
+  $('#again').onclick=()=>{box.hidden=true;$('#card-form').hidden=false;window.scrollTo(0,0)};
+  window.scrollTo(0,0);
+}
+
+/* ---------- Inicio: hoy ---------- */
+function renderHoy(){
+  const h=store.get('menarca_animo',[]);
+  const t=h.find(x=>x.d===iso(new Date()));
+  $('#hoy-animo').textContent=t&&t.m!=null?MOODS[t.m].e+' '+MOODS[t.m].n:'Aún sin registrar';
+  const e=store.get('menarca_etapa',null);
+  $('#hoy-etapa').textContent=e?'Etapa: '+STAGES[e.etapa]:'Haz una estimación';
+  const bi=bdayInfo(), bl=$('#hoy-bday');
+  if(bi&&bi.diff>=0){bl.hidden=false;bl.textContent=bi.diff===0?'🎂 ¡Hoy es tu cumpleaños!':`🎂 Faltan ${bi.diff} ${bi.diff===1?'día':'días'} para tu cumple`}
+  else bl.hidden=true;
+}
+
+/* ---------- Ánimo de la semana ---------- */
+function renderHistory(){
+  const h=store.get('menarca_animo',[]);
+  const box=$('#chart'); box.innerHTML='';
+  for(let k=6;k>=0;k--){
+    const d=new Date(); d.setDate(d.getDate()-k);
+    const e=h.find(x=>x.d===iso(d));
+    const bar=document.createElement('div'); bar.className='bar';
+    const em=document.createElement('em'), i=document.createElement('i'), s=document.createElement('span');
+    s.textContent=DIAS[d.getDay()];
+    if(e&&e.m!=null){em.textContent=MOODS[e.m].e;i.style.height=(MOODS[e.m].v*14)+'px'}
+    else{i.style.height='6px';i.style.opacity='.35'}
+    bar.append(em,i,s); box.appendChild(bar);
+  }
+  $('#hist-vacio').hidden=h.some(x=>x.m!=null);
+}
+
+/* ---------- Perfil ---------- */
+let prof=Object.assign({nick:'',frame:'none',bg:'lavanda',sparkle:false},store.get('menarca_perfil',{}));
+let foto=store.get('menarca_foto',null);
+let fondo=store.get('menarca_fondo',null);
+const saveProf=()=>store.set('menarca_perfil',prof);
+function frameSvg(k){return `<svg viewBox="0 0 100 100" aria-hidden="true">${(FR[k]||FR.none).s}</svg>`}
+const insOf=g=>g.ins||BADGES[g.badge];
+function renderAvatar(){
+  const av=$('#av'); av.innerHTML='';
+  if(foto){const im=new Image();im.src=foto;im.alt='Tu foto';av.appendChild(im)}
+  else av.textContent=prof.nick.trim()?prof.nick.trim()[0].toUpperCase():'🌙';
+  $('#av-frame').innerHTML=frameSvg(prof.frame);
+  const ab=$('#av-badge'),lg=regalos[regalos.length-1];
+  if(lg){ab.textContent=insOf(lg)[0];ab.hidden=false}else ab.hidden=true;
+}
+function renderPerfil(){
+  renderFrames();renderBgs();renderAvatar();
+  $('#nick').value=prof.nick;
+  $$('.fr').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.f===prof.frame)));
+  $$('.bgo').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.bg===prof.bg)));
+  $('#sw-sp').setAttribute('aria-checked',String(!!prof.sparkle));
+  renderSpark(); applyBg();
+  $('#bg-del').hidden=!fondo;
+  renderBday();renderFest();
+  renderRutinas();
+}
+function renderSpark(){
+  const L=$('#sparkles'); L.innerHTML='';
+  if(!prof.sparkle||RM.matches) return;
+  for(let i=0;i<16;i++){
+    const s=document.createElement('span');
+    s.className='sp'+(i%2?' l':'');
+    const z=4+Math.random()*4;
+    Object.assign(s.style,{left:Math.random()*100+'%',top:Math.random()*100+'%',width:z+'px',height:z+'px',animationDelay:(Math.random()*4)+'s'});
+    L.appendChild(s);
+  }
+}
+function applyBg(){
+  const b=$('#bgfx'), v=$('#veil');
+  const dark=document.documentElement.dataset.theme==='dark';
+  b.style.background=''; v.style.display='none';
+  if(prof.bg==='propio'){
+    if(fondo){
+      b.style.background=`url("${fondo}") center/cover fixed no-repeat`;
+      v.style.background=dark?'rgba(24,20,52,.62)':'rgba(255,255,255,.72)';
+      v.style.display='block';
+    }
+  } else if(!dark&&prof.bg!=='lavanda'&&BG[prof.bg]) b.style.background=BG[prof.bg].v;
+}
+/* Recorte de foto */
+const S=240; let crop=null, drag=null;
+function openCrop(src){
+  const img=new Image();
+  img.onload=()=>{
+    crop={img,w:img.naturalWidth,h:img.naturalHeight,z:1,x:0,y:0};
+    $('#crop-img').src=src; $('#zoom').value=1;
+    $('#crop-box').hidden=false; layoutCrop();
+  };
+  img.onerror=()=>alert('No pude abrir esa imagen. Prueba con otra.');
+  img.src=src;
+}
+function layoutCrop(){
+  if(!crop) return;
+  const s=Math.max(S/crop.w,S/crop.h)*crop.z;
+  const W=crop.w*s,H=crop.h*s,mx=(W-S)/2,my=(H-S)/2;
+  crop.x=Math.max(-mx,Math.min(mx,crop.x));
+  crop.y=Math.max(-my,Math.min(my,crop.y));
+  crop.s=s;
+  const el=$('#crop-img');
+  Object.assign(el.style,{width:W+'px',height:H+'px',left:((S-W)/2+crop.x)+'px',top:((S-H)/2+crop.y)+'px'});
+}
+function closeCrop(){crop=null;$('#crop-box').hidden=true;$('#f-up').value='';$('#f-cam').value=''}
+function readFile(file,cb){const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(file)}
+function shrink(src,max,q,cb){
+  const im=new Image();
+  im.onload=()=>{
+    const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight));
+    const c=document.createElement('canvas');
+    c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
+    const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
+    g.drawImage(im,0,0,c.width,c.height);
+    cb(c.toDataURL('image/jpeg',q));
+  };
+  im.onerror=()=>alert('No pude abrir esa imagen. Prueba con otra.');
+  im.src=src;
+}
+
+/* ---------- Instalar y modo ---------- */
+let defer=null;
+let installed=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+function paintInstall(){$$('.btn-install').forEach(b=>{b.querySelector('.bi-txt').textContent=installed?'App instalada':'Instalar app';b.disabled=installed})}
+function showTip(t){$('#tip-txt').textContent=t;$('#tip').hidden=false}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();defer=e});
+window.addEventListener('appinstalled',()=>{installed=true;defer=null;paintInstall()});
+$$('.btn-install').forEach(b=>b.addEventListener('click',async()=>{
+  if(installed) return;
+  if(defer){
+    defer.prompt();
+    try{const r=await defer.userChoice;if(r.outcome==='accepted'){installed=true;paintInstall()}}catch(_){}
+    defer=null;return;
+  }
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  showTip(ios?'Toca Compartir y luego Agregar a pantalla de inicio.':'Abre el menú del navegador y elige Instalar app.');
+}));
+$('#tip-x').onclick=()=>$('#tip').hidden=true;
+
+function setTheme(t,save=true){
+  document.documentElement.dataset.theme=t;
+  if(save) store.set('menarca_tema',t);
+  $$('.toggle').forEach(b=>{b.dataset.mode=t;b.setAttribute('aria-checked',String(t==='dark'));b.querySelector('.tl').textContent=t==='dark'?'Oscuro':'Claro'});
+  applyBg();
+}
+$$('.toggle').forEach(b=>b.addEventListener('click',()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark')));
+
+let ICON=null;
+function setupPwa(){
+  let url=null;
+  try{
+    const c=document.createElement('canvas');c.width=c.height=180;
+    const g=c.getContext('2d');
+    const gr=g.createLinearGradient(0,0,180,180);gr.addColorStop(0,'#6FD3A4');gr.addColorStop(1,'#6FA8D6');
+    g.fillStyle=gr;g.beginPath();g.arc(90,90,90,0,Math.PI*2);g.fill();
+    g.fillStyle='#fff';g.beginPath();g.arc(86,92,52,0,Math.PI*2);g.fill();
+    g.fillStyle=gr;g.beginPath();g.arc(112,72,44,0,Math.PI*2);g.fill();
+    url=c.toDataURL('image/png');ICON=url;
+    const ap=document.createElement('link');ap.rel='apple-touch-icon';ap.href=url;document.head.appendChild(ap);
+  }catch(e){}
+  try{
+    const fav=document.createElement('link');fav.rel='icon';fav.href=url||'data:,';document.head.appendChild(fav);
+  }catch(e){}
+  if(!/^https?:/.test(location.protocol)||!url) return;
+  try{
+    const base=location.href.split('#')[0];
+    const m={name:'Estimar menarca',short_name:'Estimar menarca',start_url:base,display:'standalone',background_color:'#F9F7FD',theme_color:'#A99BE0',
+      icons:[{src:url,sizes:'180x180',type:'image/png'}],
+      shortcuts:[{name:'Calendario',url:base+'#registro'},{name:'Estimar',url:base+'#estimar'}]};
+    const link=document.createElement('link');link.rel='manifest';
+    link.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));
+    document.head.appendChild(link);
+  }catch(e){}
+}
+
+/* ---------- Registro diario ---------- */
+let regMood=null, calMonth=new Date(), selDay=iso(new Date());
+const SYM=[['Cólicos','😣'],['Dolor de cabeza','🤕'],['Cansancio','😴'],['Hinchazón','🎈'],['Mamas sensibles','🌸'],['Granitos','🔴'],['Dolor de espalda','🧍'],['Antojos','🍫'],['Sudor u olor','💦']];
+const FLU=[['ninguno','Nada','🚫'],['blanco','Blanco o cremoso','🥛'],['claro','Transparente','💧'],['manchas','Manchas rosadas','🩷'],['cafe','Manchas café','🤎']];
+const INT=[['ligera','Ligera'],['normal','Normal'],['fuerte','Fuerte']];
+const entryOf=d=>store.get('menarca_animo',[]).find(x=>x.d===d)||{};
+const fmtDay=d=>new Date(d+'T12:00').toLocaleDateString('es',{day:'numeric',month:'long'});
+function periodStarts(){
+  const set=new Set(store.get('menarca_animo',[]).filter(x=>x.periodo==='si').map(x=>x.d).sort());
+  return [...set].filter(d=>{const p=new Date(d+'T12:00');p.setDate(p.getDate()-1);return !set.has(iso(p))});
+}
+const T12=d=>new Date(d+'T12:00');
+const fmtShort=d=>d.toLocaleDateString('es',{day:'numeric',month:'short'});
+function predWin(){
+  const s=periodStarts(); if(s.length<2) return null;
+  const gaps=[];
+  for(let i=1;i<s.length;i++) gaps.push(Math.round((T12(s[i])-T12(s[i-1]))/864e5));
+  let lo=Math.min(...gaps), hi=Math.max(...gaps);
+  if(lo===hi){lo=Math.max(1,lo-2);hi+=2}
+  const last=T12(s[s.length-1]);
+  const a=new Date(last);a.setDate(a.getDate()+lo);
+  const b=new Date(last);b.setDate(b.getDate()+hi);
+  return {a,b,gaps,last};
+}
+function periodLen(){
+  const set=new Set(store.get('menarca_animo',[]).filter(x=>x.periodo==='si').map(x=>x.d));
+  const lens=periodStarts().map(st=>{let n=0;const d=T12(st);while(set.has(iso(d))){n++;d.setDate(d.getDate()+1)}return n});
+  return lens.length?Math.round(lens.reduce((x,y)=>x+y,0)/lens.length):0;
+}
+function renderMenarca(){
+  const el=$('#menarca'), e=store.get('menarca_etapa',null), st=periodStarts();
+  if(st.length){
+    const f=T12(st[0]);
+    el.innerHTML=`<p style="margin:0 0 10px">¡Ya marcaste tu primera menstruación! 🌸</p><div class="stats"><div class="stat wide"><b>${f.toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'})}</b><span>fue tu primera vez</span></div></div>`;
+    return;
+  }
+  if(!e||e.wMax==null){
+    el.innerHTML='<p style="margin:0 0 12px">Aún no tienes una estimación. Responde unas preguntas y calculo más o menos cuándo podría llegar.</p><button class="btn block" data-go="estimar" type="button">Calcular ahora</button>';
+    return;
+  }
+  const now=new Date(), el0=Math.max(0,(now-T12(e.fecha))/(30.44*864e5));
+  const a=Math.max(0,e.wMin-el0), b=Math.max(0,e.wMax-el0), mid=(a+b)/2;
+  const M=Math.max(12,Math.ceil(b)+3), L=a/M*100, W=Math.max(6,(b-a)/M*100);
+  const sg=e.sig||{};
+  const pasos=[['mamas','🌸 Mamas'],['vello','🌿 Vello'],['crece','📏 Estirón'],['flujo','💧 Flujo'],['x','🌷 Primera menstruación']];
+  const cuando=b<=0?'En cualquier momento':b<=1?'En las próximas semanas':(a<=0.5?'Desde ya hasta ':'Entre ')+(a<=0.5?monthYear(addM(now,b)):monthYear(addM(now,a))+' y '+monthYear(addM(now,b)));
+  el.innerHTML=`<div class="stats"><div class="stat wide"><b>${cuando}</b><span>cuándo podría llegar</span></div>${b>1?`<div class="stat wide"><b>${monthYear(addM(now,mid))}</b><span>lo más probable</span></div>`:''}</div>
+<div class="tl" aria-hidden="true"><i class="tl-w" style="left:${L}%;width:${Math.min(W,100-L)}%"></i><b class="tl-n"></b></div><div class="tl-l"><span>Hoy</span><span>${M} meses</span></div>
+<p style="margin:0 0 6px;font-weight:600">Mi camino:</p><div class="steps">${pasos.map(([k,t])=>`<span class="${sg[k]?'ok':''}">${sg[k]?'✓ ':''}${t}</span>`).join('')}</div>
+<p class="muted" style="margin:0 0 12px;font-size:13px">Calculado el ${fmtDay(e.fecha)} con tus respuestas y tu edad. Se va actualizando con el tiempo. Es solo una aproximación.</p>
+<button class="btn ghost block" data-go="estimar" type="button">Volver a calcular</button>`;
+}
+function faseTxt(n,cyc,plen){
+  const L=cyc||28,P=plen||5;
+  if(n<1||n>L+10) return null;
+  if(n<=P) return ['🌸 Menstruación','Es normal sentir cansancio o cólicos. Descansar y tomar agua ayuda.'];
+  if(n<L-14) return ['🌱 Renovación','Muchas chicas sienten más energía en estos días.'];
+  if(n<=L-12) return ['✨ Mitad del ciclo','Puede aparecer más flujo transparente. Es normal.'];
+  return ['🌙 Antes de la próxima','Puede haber cambios de humor, mamas sensibles o hinchazón.'];
+}
+function renderRitmo(){
+  const s=periodStarts(), el=$('#ritmo');
+  if(!s.length){el.innerHTML='<p style="margin:0 0 10px">Aún no tienes una menstruación marcada. Cuando la marques en el calendario, aquí verás cómo va tu ritmo ✨</p>';return}
+  const last=T12(s[s.length-1]), today=new Date(); today.setHours(12,0,0,0);
+  const dayN=Math.round((today-last)/864e5)+1;
+  const w=predWin(), plen=periodLen();
+  const cyc=w?Math.round(w.gaps.reduce((x,y)=>x+y,0)/w.gaps.length):0;
+  const stats=[
+    [dayN>0?'Día '+dayN:'—','del ciclo'],
+    [w?fmtShort(w.a)+' – '+fmtShort(w.b):'—','próxima posible'],
+    [plen?plen+(plen===1?' día':' días'):'—','dura tu periodo'],
+    [cyc?cyc+' días':'—','entre periodos']
+  ];
+  let txt='Tu última menstruación empezó el '+fmtDay(iso(last))+'.';
+  if(!w) txt+=' Con dos menstruaciones marcadas podremos calcular tu ritmo.';
+  else{
+    const dd=Math.round((w.a-today)/864e5);
+    if(dd>0) txt+=` Según tus registros, faltan unos ${dd} ${dd===1?'día':'días'} para la próxima.`;
+    else if(today<=w.b) txt+=' Según tus registros, la próxima podría llegar en estos días.';
+    else txt+=' Ya pasó la fecha estimada. Al principio es normal que los ciclos sean irregulares.';
+  }
+  const fz=faseTxt(dayN,cyc,plen);
+  el.innerHTML=`<div class="stats">${stats.map(([b,l])=>`<div class="stat"><b>${b}</b><span>${l}</span></div>`).join('')}${fz?`<div class="stat wide"><b>${fz[0]}</b><span>${fz[1]}</span></div>`:''}</div><p style="margin:0 0 10px">${txt}</p>`;
+}
+function renderCal(){
+  const y=calMonth.getFullYear(),m=calMonth.getMonth();
+  $('#cal-title').textContent=calMonth.toLocaleDateString('es',{month:'long',year:'numeric'});
+  const offset=(new Date(y,m,1).getDay()+6)%7, n=new Date(y,m+1,0).getDate();
+  const today=iso(new Date()), hist=store.get('menarca_animo',[]);
+  const w=predWin(), pa=w?iso(w.a):null, pb=w?iso(w.b):null;
+  let html='';
+  for(let i=0;i<offset;i++) html+='<span></span>';
+  for(let d=1;d<=n;d++){
+    const key=iso(new Date(y,m,d)), e=hist.find(x=>x.d===key)||{};
+    const pred=pa&&key>=pa&&key<=pb&&e.periodo!=='si';
+    const hasSy=(e.dolor||[]).length>0;
+    html+=`<button class="day${key===today?' today':''}${key===selDay?' sel':''}${pred?' pred':''}" type="button" data-d="${key}" aria-label="${fmtDay(key)}${e.periodo==='si'?', con menstruación':''}${pred?', posible próxima menstruación':''}">${bday&&bday.d===d&&bday.m===m+1?'<span class="bd" aria-hidden="true">🎂</span>':''}${d}${e.m!=null?`<em aria-hidden="true">${MOODS[e.m].e}</em>`:''}${e.periodo==='si'?`<span class="per ${e.intensidad||'normal'}"></span>`:''}${e.flujo&&e.flujo!=='ninguno'?'<span class="fl"></span>':''}${hasSy?'<span class="sy"></span>':''}</button>`;
+  }
+  $('#cal').innerHTML=html;
+}
+function syncInt(){const p=$('#reg-per input:checked');$('#int-box').hidden=!p||p.value!=='si'}
+function renderDay(){
+  const e=entryOf(selDay);
+  $('#day-title').textContent=new Date(selDay+'T12:00').toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
+  regMood=e.m??null;
+  $('#reg-per').innerHTML=[['no','No'],['si','Sí']].map(([v,l])=>`<label><input type="radio" name="per" value="${v}"${(e.periodo||'no')===v?' checked':''}><span>${l}</span></label>`).join('');
+  $('#reg-int').innerHTML=INT.map(([v,l])=>`<label><input type="radio" name="int" value="${v}"${(e.intensidad||'normal')===v?' checked':''}><span>${l}</span></label>`).join('');
+  $('#reg-moods').innerHTML=MOODS.map((m,i)=>`<button class="mood${regMood===i?' on':''}" type="button" data-rm="${i}" aria-pressed="${regMood===i}"><b aria-hidden="true">${m.e}</b>${m.n}</button>`).join('');
+  $('#reg-mol').innerHTML=SYM.map(([n,ic])=>`<label class="tile"><input type="checkbox" value="${n}"${(e.dolor||[]).includes(n)?' checked':''}><span><b aria-hidden="true">${ic}</b>${n}</span></label>`).join('');
+  $('#reg-flu').innerHTML=FLU.map(([v,l,ic])=>`<label class="tile"><input type="radio" name="flu" value="${v}"${(e.flujo||'ninguno')===v?' checked':''}><span><b aria-hidden="true">${ic}</b>${l}</span></label>`).join('');
+  $('#reg-nota').value=e.nota||'';
+  $('#reg-ok').hidden=true;
+  syncInt(); liveTips();
+}
+function readForm(){
+  const per=($('#reg-per input:checked')||{}).value||'no';
+  return {
+    per,
+    inten:per==='si'?(($('#reg-int input:checked')||{}).value||'normal'):null,
+    flujo:($('#reg-flu input:checked')||{}).value||'ninguno',
+    dolor:[...$('#reg-mol').querySelectorAll('input:checked')].map(i=>i.value),
+    m:regMood
+  };
+}
+function refreshAll(msg){
+  renderCal();renderRitmo();renderMenarca();renderHoy();renderHistory();renderPron();renderTips();renderDay();
+  $('#reg-ok').textContent=msg;$('#reg-ok').hidden=false;
+}
+function saveDay(){
+  const h=store.get('menarca_animo',[]);
+  const f=readForm();
+  const nota=$('#reg-nota').value.trim().slice(0,200);
+  const entry={d:selDay,m:regMood,dolor:f.dolor,flujo:f.flujo,nota,periodo:f.per,intensidad:f.inten};
+  const k=h.findIndex(x=>x.d===selDay);
+  if(k>=0) h[k]={...h[k],...entry}; else h.push(entry);
+  store.set('menarca_animo',h.slice(-400));
+  refreshAll('Guardado en este dispositivo.'+(f.inten==='fuerte'?' Si el sangrado es muy fuerte, dura mucho o te preocupa, habla con tu pediatra o con un adulto de confianza.':''));
+}
+function delDay(){
+  store.set('menarca_animo',store.get('menarca_animo',[]).filter(x=>x.d!==selDay));
+  refreshAll('Día borrado.');
+}
+
+/* ---------- Tarjetas educativas ---------- */
+const TIPS={
+ 'fuerte':['🩸 Sangrado fuerte','Si empapas una toalla en menos de 2 horas, el periodo dura más de 7 días o te sientes mareada, avisa hoy a un adulto y consulta a tu pediatra.'],
+ 'f:manchas':['🩷 Manchas rosadas','Pueden ser el inicio de tu periodo o manchas sueltas. Lleva una toalla o protector en la mochila y anótalo en tu calendario.'],
+ 'f:cafe':['🤎 Manchas café','Es sangre vieja, y a veces aparece justo antes o después del periodo. Es común al principio. Si se repite mucho o te preocupa, coméntalo con tu pediatra.'],
+ 'periodo':['🌸 Estás en tus días','Cambia tu toalla cada 4 a 6 horas, toma agua y descansa si lo necesitas. Un periodo normal dura entre 2 y 7 días.'],
+ 'Cólicos':['😣 Cólicos','Pasan porque el útero se contrae. Una bolsa tibia en la parte baja del abdomen, descansar y moverte suave ayudan. Si el dolor es muy fuerte, avisa a un adulto y habla con tu pediatra.'],
+ 'f:blanco':['🥛 Flujo blanco o cremoso','Es normal y es señal de que el cuerpo se prepara. Suele aparecer unos 6 meses antes de la primera menstruación. Si huele fuerte o pica, consulta a tu pediatra.'],
+ 'f:claro':['💧 Flujo transparente','Es normal y suele aumentar a mitad del ciclo o antes de la primera menstruación. Si huele fuerte o pica, consulta a tu pediatra.'],
+ 'Mamas sensibles':['🌸 Mamas sensibles','Las hormonas hacen que las mamas crezcan y duelan un poco. Un top cómodo ayuda. Si notas un bulto o un dolor muy fuerte, avísale a un adulto.'],
+ 'Hinchazón':['🎈 Hinchazón','Antes del periodo el cuerpo retiene más líquido. Moverte, beber agua y comer menos cosas saladas puede ayudar. Pasa sola en unos días.'],
+ 'Granitos':['🔴 Granitos','Las hormonas hacen que la piel produzca más grasa. Lava tu cara con suavidad dos veces al día y no los revientes. Si son muchos o duelen, pregunta a tu pediatra.'],
+ 'Cansancio':['😴 Cansancio','Tu cuerpo está creciendo y cambiando, y eso gasta energía. Dormir lo suficiente (entre 8 y 12 horas según tu edad), comer variado y moverte un poco ayuda.'],
+ 'Dolor de cabeza':['🤕 Dolor de cabeza','Puede venir de los cambios hormonales, de dormir poco o de tomar poca agua. Descansa, bebe agua y evita las pantallas un rato. Si es muy fuerte o seguido, avisa a un adulto.'],
+ 'Dolor de espalda':['🧍 Dolor de espalda','Es común antes y durante el periodo. El calor suave y estirarte despacio ayudan. Si es muy fuerte o dura mucho, coméntalo con un adulto.'],
+ 'Antojos':['🍫 Antojos','Son normales por los cambios hormonales. Puedes darte un gustito y también sumar fruta, agua y comidas variadas.'],
+ 'Sudor u olor':['💦 Sudor y olor','El cuerpo suda más y el olor cambia con la pubertad. Bañarte a diario y usar desodorante ayuda mucho.'],
+ 'emo':['💜 Tus emociones','Las hormonas pueden subir y bajar tus emociones, y eso es normal. Respira lento (inhala 4 segundos, suelta 6), muévete o habla con alguien de confianza. Si la tristeza dura más de dos semanas, cuéntaselo a un adulto.']
+};
+const PRI=['fuerte','f:manchas','f:cafe','periodo','Cólicos','f:blanco','f:claro','Mamas sensibles','Hinchazón','Granitos','Cansancio','Dolor de cabeza','Dolor de espalda','Antojos','Sudor u olor','emo'];
+function keysOf(f){
+  const k=[...(f.dolor||[])];
+  if(f.flujo&&f.flujo!=='ninguno') k.push('f:'+f.flujo);
+  if(f.per==='si'){k.push('periodo');if(f.inten==='fuerte')k.push('fuerte')}
+  if(f.m!=null&&MOODS[f.m]){
+    const n=MOODS[f.m].n;
+    if(n==='Cansada') k.push('Cansancio');
+    else if(['Triste','Enojada','Nerviosa','Confundida','Sensible'].includes(n)) k.push('emo');
+  }
+  return uniq(k);
+}
+function tipsHtml(keys,max){
+  return keys.filter(k=>TIPS[k]).sort((a,b)=>PRI.indexOf(a)-PRI.indexOf(b)).slice(0,max).map(k=>`<div class="tipc"><b>${TIPS[k][0]}</b><p>${TIPS[k][1]}</p></div>`).join('');
+}
+function liveTips(){
+  const el=$('#day-tips'); if(!el) return;
+  const h=tipsHtml(keysOf(readForm()),3);
+  el.innerHTML=h?`<h3 style="margin:0 0 10px;font-size:16px">Lo que significa 💡</h3>${h}`:'';
+}
+function renderTips(){
+  const h=store.get('menarca_animo',[]), now=T12(iso(new Date())); let ks=[];
+  h.forEach(e=>{
+    const ago=Math.round((now-T12(e.d))/864e5);
+    if(ago>=0&&ago<3) ks=ks.concat(keysOf({per:e.periodo,inten:e.intensidad,flujo:e.flujo,dolor:e.dolor,m:e.m}));
+  });
+  const html=tipsHtml(uniq(ks),3);
+  $('#tips').innerHTML=html||'<p class="muted" style="margin:0">Cuando registres cómo te sientes, aquí aparecerán consejos sencillos sobre lo que significa en tu cuerpo.</p>';
+}
+
+/* ---------- Pronóstico ---------- */
+const SW={'Cólicos':1,'Dolor de cabeza':.4,'Cansancio':.5,'Hinchazón':.8,'Mamas sensibles':1,'Granitos':.5,'Antojos':.5,'Sudor u olor':.3,'Dolor de espalda':.7,'f:blanco':1.2,'f:claro':1.2,'f:manchas':3,'f:cafe':3,'m':.3};
+function recentSig(days){
+  const h=store.get('menarca_animo',[]), now=T12(iso(new Date()));
+  let score=0,n=0; const seen={};
+  h.forEach(e=>{
+    if(e.periodo==='si') return;
+    const ago=Math.round((now-T12(e.d))/864e5); if(ago<0||ago>=days) return;
+    const ks=[...(e.dolor||[])];
+    if(e.flujo&&e.flujo!=='ninguno') ks.push('f:'+e.flujo);
+    if(e.m!=null&&MOODS[e.m]&&MOODS[e.m].v<=3) ks.push('m');
+    ks.forEach(k=>{seen[k]=seen[k]||0;if(seen[k]<3){seen[k]++;score+=(SW[k]||.4)*(ago<=7?1:.6);n++}});
+  });
+  return {score,n};
+}
+function pronostico(){
+  const h=store.get('menarca_animo',[]), todayK=iso(new Date()), today=T12(todayK);
+  if(h.some(x=>x.d===todayK&&x.periodo==='si')) return {kind:'en'};
+  const st=periodStarts(), sg=recentSig(14), H=7;
+  let lo=null,hi=null,base='',kind='sin';
+  const dd=d=>Math.round((d-today)/864e5);
+  if(st.length){
+    const last=T12(st[st.length-1]), w=predWin();
+    if(w){lo=dd(w.a);hi=dd(w.b);base='tu ritmo (tus ciclos anteriores)'}
+    else{const a=new Date(last);a.setDate(a.getDate()+21);const b=new Date(last);b.setDate(b.getDate()+45);lo=dd(a);hi=dd(b);base='el tiempo desde tu última menstruación (en las adolescentes los ciclos suelen durar entre 21 y 45 días)'}
+    kind='ciclo';
+  }else{
+    const e=store.get('menarca_etapa',null);
+    if(e&&e.wMax!=null){
+      const el0=Math.max(0,(today-T12(e.fecha))/(30.44*864e5));
+      lo=Math.round(Math.max(0,e.wMin-el0)*30.44);hi=Math.round(Math.max(0,e.wMax-el0)*30.44);
+      base='tu estimación y el tiempo que pasó desde que la hiciste';kind='est';
+    }
+  }
+  let p0=0.02;
+  if(lo!==null){
+    if(hi<0) p0=.3;
+    else if(hi===0&&kind==='est') p0=.15;
+    else{
+      const len=Math.max(hi-lo+1,kind==='est'?30:7);
+      const ov=Math.max(0,Math.min(hi,H)-Math.max(lo,0)+1);
+      p0=Math.min(.9,ov/len);
+    }
+  }
+  let p=1-(1-p0)*Math.exp(-sg.score/9);
+  p=Math.min(.92,Math.max(p,p0));
+  const pct=Math.round(p*100/5)*5;
+  return {kind,pct,nivel:pct<20?'baja':pct<50?'media':'alta',base,n:sg.n,hasData:lo!==null};
+}
+function renderPron(){
+  const r=pronostico(), el=$('#pron');
+  if(r.kind==='en'){
+    el.innerHTML='<p style="margin:0 0 10px;font-size:18px;font-weight:600">🌸 Estás en tus días</p><p class="muted" style="margin:0">Cuando termine, calcularé cuándo podría llegar la próxima. Mientras tanto, anota cómo te sientes cada día.</p>';
+    return;
+  }
+  const NV={baja:['Baja','Es poco probable que te llegue en los próximos 7 días.'],media:['Media','Podría llegar en los próximos días. Lleva una toalla a mano.'],alta:['Alta','Es probable que llegue pronto. Lleva una toalla o protector en tu mochila.']}[r.nivel];
+  const ptxt=r.pct<5?'menos de 5%':r.pct+'%';
+  const base=r.hasData?`Se calculó con ${r.base} y con ${r.n} ${r.n===1?'señal registrada':'señales registradas'} en los últimos 14 días.`:`Aún no tienes una estimación ni menstruaciones marcadas, así que solo conté ${r.n} ${r.n===1?'señal registrada':'señales registradas'} en los últimos 14 días.`;
+  el.innerHTML=`<div class="pron-top"><b>${ptxt}</b><span class="pill ${r.nivel}">Probabilidad ${NV[0].toLowerCase()}</span></div>
+<div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${r.pct}" aria-label="Probabilidad de que llegue en 7 días"><i style="--w:${Math.max(r.pct,2)}%"></i></div>
+<div class="pbar-l"><span>0%</span><span>50%</span><span>100%</span></div>
+<p style="margin:0 0 8px">${NV[1]}</p>
+<p class="muted" style="margin:0 0 10px;font-size:14px">${base}</p>
+${r.hasData?'':'<button class="btn ghost" data-go="estimar" type="button" style="margin-bottom:10px">Hacer mi estimación</button>'}
+<details><summary>¿Cómo se calcula?</summary><p>Primero veo qué parte de tu ventana probable cae en los próximos 7 días. Después la subo según las señales que anotaste en 14 días: manchas y flujo pesan más; cólicos, mamas sensibles e hinchazón pesan menos. Es una fórmula sencilla de esta app, no un método médico, y nadie puede predecir el día exacto.</p></details>`;
+}
+function renderHome(){renderCal();renderRitmo();renderMenarca();renderDay();renderPron();renderTips();renderHistory();renderHoy();renderRutinas()}
+
+/* ---------- Rutinas y avisos ---------- */
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const RUT_PRE=[
+ {id:'agua',n:'Beber agua',e:'💧',goal:8},
+ {id:'dientes',n:'Lavarme los dientes',e:'🪥',goal:2},
+ {id:'dormir',n:'Dormir temprano',e:'😴',goal:1},
+ {id:'mover',n:'Moverme o estirarme',e:'🤸',goal:1},
+ {id:'fruta',n:'Comer fruta',e:'🍎',goal:2},
+ {id:'leer',n:'Leer un ratito',e:'📖',goal:1}
+];
+const EVERY=[[30,'Cada 30 min'],[60,'Cada hora'],[90,'Cada 1 h 30'],[120,'Cada 2 horas'],[180,'Cada 3 horas']];
+let rut=store.get('menarca_rutinas',null);
+if(!rut||!Array.isArray(rut.items)) rut={items:[{id:'agua',n:'Beber agua',e:'💧',goal:8,rem:false,every:90,from:'08:00',to:'20:00'}],log:{}};
+rut.log=rut.log||{};
+const remLast=store.get('menarca_remlast',{});
+const saveRut=()=>{const l={};Object.keys(rut.log).sort().slice(-90).forEach(k=>l[k]=rut.log[k]);rut.log=l;store.set('menarca_rutinas',rut)};
+const rcount=(id,d=iso(new Date()))=>(rut.log[d]||{})[id]||0;
+const runit=it=>it.id==='agua'?'vasos':'veces';
+function rbump(id,n){
+  const d=iso(new Date());
+  rut.log[d]=rut.log[d]||{};
+  rut.log[d][id]=Math.max(0,Math.min(99,rcount(id,d)+n));
+  saveRut();renderRutinas();
+}
+function rstreak(it){
+  let n=0;const d=new Date();
+  if(rcount(it.id,iso(d))<it.goal) d.setDate(d.getDate()-1);
+  while(n<400&&rcount(it.id,iso(d))>=it.goal){n++;d.setDate(d.getDate()-1)}
+  return n;
+}
+const rpct=it=>Math.min(100,Math.round(rcount(it.id)/it.goal*100));
+function rutCard(it){
+  const c=rcount(it.id), st=rstreak(it);
+  const cfg=it.rem?`<div class="rut-cfg"><label>Cada<select data-f="every">${EVERY.map(([v,l])=>`<option value="${v}"${v===it.every?' selected':''}>${l}</option>`).join('')}</select></label><label>Desde<input type="time" data-f="from" value="${it.from}"></label><label>Hasta<input type="time" data-f="to" value="${it.to}"></label></div>`:'';
+  return `<div class="rut" data-id="${esc(it.id)}">
+<div class="rut-h"><span class="rut-e" aria-hidden="true">${it.e}</span><h3>${esc(it.n)}</h3><button class="btn ghost rdel" type="button" data-act="del" aria-label="Quitar ${esc(it.n)}"><svg class="i"><use href="#i-trash"/></svg></button></div>
+<div class="rut-p"><button class="rbtn minus" type="button" data-act="minus" aria-label="Restar uno">−</button><div class="rut-m"><b>${c} de ${it.goal} ${runit(it)} hoy</b><div class="rbar"><i style="--w:${rpct(it)}%"></i></div></div><button class="rbtn" type="button" data-act="plus" aria-label="Sumar uno">+</button></div>
+<p class="muted">${c>=it.goal?'¡Meta de hoy cumplida! 🎉':'Meta diaria'}${st?` · 🔥 ${st} ${st===1?'día':'días'} seguidos`:''}</p>
+<div class="rut-cfg"><label>Meta por día<input type="number" min="1" max="20" value="${it.goal}" data-f="goal"></label></div>
+<div class="switch-row" style="margin:12px 0 0"><p>Avisarme con una notificación</p><button class="sw" type="button" role="switch" data-act="rem" aria-checked="${!!it.rem}" aria-label="Avisarme: ${esc(it.n)}"></button></div>
+${cfg}</div>`;
+}
+function rutMini(it){
+  const c=rcount(it.id);
+  return `<div class="rmini" data-id="${esc(it.id)}"><span aria-hidden="true">${it.e}</span><div class="rut-m"><b>${esc(it.n)}<small>${c}/${it.goal}</small></b><div class="rbar"><i style="--w:${rpct(it)}%"></i></div></div><button class="rbtn" type="button" data-act="plus" aria-label="Sumar uno a ${esc(it.n)}">+</button></div>`;
+}
+function renderRutinas(){
+  const L=$('#rut-list');
+  if(L) L.innerHTML=rut.items.map(rutCard).join('')||'<p class="muted">Todavía no tienes rutinas. Agrega una abajo.</p>';
+  const A=$('#rut-add');
+  if(A) A.innerHTML=RUT_PRE.filter(p=>!rut.items.some(x=>x.id===p.id)).map(p=>`<button class="chip" type="button" data-add="${p.id}">+ ${p.e} ${p.n}</button>`).join('');
+  const H=$('#rut-hoy');
+  if(H) H.innerHTML=rut.items.length?rut.items.map(rutMini).join(''):'<p class="muted" style="margin:0 0 12px">Agrega rutinas en tu perfil.</p>';
+  renderNotif();
+}
+function rutClick(e){
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const box=b.closest('[data-id]'); if(!box) return;
+  const it=rut.items.find(x=>x.id===box.dataset.id); if(!it) return;
+  const a=b.dataset.act;
+  if(a==='plus') rbump(it.id,1);
+  else if(a==='minus') rbump(it.id,-1);
+  else if(a==='rem'){
+    it.rem=!it.rem;
+    if(it.rem){remLast[it.id]=Date.now();store.set('menarca_remlast',remLast);if(notifState()==='default')askNotif()}
+    saveRut();renderRutinas();
+  }
+  else if(a==='del'){
+    if(confirm('¿Quitar esta rutina?')){rut.items=rut.items.filter(x=>x!==it);saveRut();renderRutinas()}
+  }
+}
+function rutChange(e){
+  const t=e.target,f=t.dataset.f; if(!f) return;
+  const box=t.closest('[data-id]'); if(!box) return;
+  const it=rut.items.find(x=>x.id===box.dataset.id); if(!it) return;
+  if(f==='goal') it.goal=Math.max(1,Math.min(20,Math.round(+t.value)||1));
+  else if(f==='every') it.every=+t.value||90;
+  else if((f==='from'||f==='to')&&t.value) it[f]=t.value;
+  saveRut();renderRutinas();
+}
+const notifState=()=>('Notification' in window)?Notification.permission:'unsupported';
+function renderNotif(){
+  const st=notifState();
+  const msg={
+    unsupported:'Este navegador no permite avisos del sistema. Verás el recordatorio dentro de la página.',
+    granted:'Avisos activados ✓ Llegan mientras esta página esté abierta, aunque esté en otra pestaña o minimizada.',
+    denied:'Los avisos están bloqueados. Actívalos desde el candado de la barra de direcciones y vuelve a cargar la página.',
+    default:'Activa los avisos para que el dispositivo te recuerde beber agua.'
+  }[st];
+  const t=$('#notif-txt'); if(t) t.textContent=msg;
+  const b=$('#notif-on'); if(b) b.hidden=(st==='granted'||st==='unsupported');
+}
+async function askNotif(){
+  if('Notification' in window){try{await Notification.requestPermission()}catch(e){}}
+  renderNotif();
+}
+function notify(title,body,id){
+  let shown=false;
+  if('Notification' in window&&Notification.permission==='granted'){
+    try{
+      const n=new Notification(title,{body,icon:ICON||undefined,tag:'menarca-'+id});
+      n.onclick=()=>{try{window.focus()}catch(_){}n.close()};
+      shown=true;
+    }catch(e){}
+  }
+  if(!shown) showTip(title+' '+body);
+}
+const hm=t=>{const [h,m]=(t||'0:0').split(':').map(Number);return (h||0)*60+(m||0)};
+function tick(){
+  checkCelebs();
+  const now=new Date(), mins=now.getHours()*60+now.getMinutes();
+  rut.items.forEach(it=>{
+    if(!it.rem) return;
+    const a=hm(it.from), b=hm(it.to);
+    const inWin=a<=b?(mins>=a&&mins<=b):(mins>=a||mins<=b);
+    if(!inWin||rcount(it.id)>=it.goal) return;
+    if(Date.now()-(remLast[it.id]||0)<it.every*60000) return;
+    remLast[it.id]=Date.now();store.set('menarca_remlast',remLast);
+    const c=rcount(it.id);
+    if(it.id==='agua') notify('💧 ¡Hora de beber agua!',`Llevas ${c} de ${it.goal} vasos hoy. Toma un vaso y anótalo en la página.`,it.id);
+    else notify(`${it.e} ${it.n}`,`Recordatorio. Llevas ${c} de ${it.goal} hoy.`,it.id);
+  });
+}
+
+/* ---------- Cumpleaños, fiestas y regalos ---------- */
+const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const FR_BASE=Object.keys(FR), BG_BASE=Object.keys(BG).filter(k=>k!=='propio');
+const FRX_KEYS=['corona','arcoiris','globos','confeti','nubes','lazo'], BGX_KEYS=['atardecer','nube','durazno','helado','bosque','oceano'];
+Object.assign(FR,{
+ corona:{l:'Corona',s:'<circle cx="50" cy="50" r="46" fill="none" stroke="#F7DC8A" stroke-width="3"/><path d="M34 14l7 8 9-13 9 13 7-8-3 15H37z" fill="#F9E4A0" stroke="#fff" stroke-width="1.5"/>'},
+ arcoiris:{l:'Arcoíris',s:'<circle cx="50" cy="50" r="47.5" fill="none" stroke="#F7B8C8" stroke-width="2.5"/><circle cx="50" cy="50" r="45" fill="none" stroke="#FBE0A8" stroke-width="2.5"/><circle cx="50" cy="50" r="42.5" fill="none" stroke="#BFE6CF" stroke-width="2.5"/><circle cx="50" cy="50" r="40" fill="none" stroke="#BCD6F2" stroke-width="2.5"/>'},
+ globos:{l:'Globos',s:'<ellipse cx="18" cy="16" rx="8" ry="10" fill="#F7B8C8"/><ellipse cx="34" cy="8" rx="7" ry="9" fill="#BCD6F2"/><ellipse cx="82" cy="14" rx="8" ry="10" fill="#FBE0A8"/><ellipse cx="68" cy="7" rx="7" ry="9" fill="#BFE6CF"/><path d="M18 26q4 14 10 22M34 17q6 16 8 28M82 24q-4 14-10 24M68 16q-6 16-8 28" stroke="#fff" stroke-width="1.2" fill="none"/>'},
+ confeti:{l:'Confeti',s:[[10,30,'#F7B8C8'],[20,12,'#BCD6F2'],[50,3,'#FBE0A8'],[80,10,'#BFE6CF'],[92,32,'#F7B8C8'],[94,60,'#BCD6F2'],[85,86,'#FBE0A8'],[55,94,'#BFE6CF'],[25,88,'#F7B8C8'],[4,64,'#BCD6F2']].map(([x,y,c])=>`<rect x="${x}" y="${y}" width="6" height="6" rx="1.5" fill="${c}" transform="rotate(${x*3} ${x} ${y})"/>`).join('')},
+ nubes:{l:'Nubes',s:'<ellipse cx="14" cy="60" rx="14" ry="8" fill="#fff" stroke="#BCD6F2" stroke-width="1.5"/><ellipse cx="88" cy="30" rx="14" ry="8" fill="#fff" stroke="#BCD6F2" stroke-width="1.5"/><ellipse cx="80" cy="88" rx="12" ry="7" fill="#fff" stroke="#BCD6F2" stroke-width="1.5"/>'},
+ lazo:{l:'Lazo',s:'<circle cx="50" cy="50" r="46" fill="none" stroke="#F7B8C8" stroke-width="3"/><ellipse cx="40" cy="8" rx="11" ry="6" fill="#F7B8C8" transform="rotate(-20 40 8)"/><ellipse cx="60" cy="8" rx="11" ry="6" fill="#F7B8C8" transform="rotate(20 60 8)"/><circle cx="50" cy="8" r="4.5" fill="#EE92AE"/>'},
+ f_navidad:{l:'Navidad',s:'<circle cx="50" cy="50" r="46" fill="none" stroke="#8CCB9B" stroke-width="3.5"/>'+[20,70,120,200,250,310].map(a=>{const r=a*Math.PI/180;return `<circle cx="${(50+46*Math.cos(r)).toFixed(1)}" cy="${(50+46*Math.sin(r)).toFixed(1)}" r="4" fill="#F28B9B" stroke="#fff" stroke-width="1"/>`}).join('')+'<ellipse cx="42" cy="5" rx="9" ry="5" fill="#F28B9B" transform="rotate(-20 42 5)"/><ellipse cx="58" cy="5" rx="9" ry="5" fill="#F28B9B" transform="rotate(20 58 5)"/><circle cx="50" cy="6" r="4" fill="#E26A7E"/>'},
+ f_anonuevo:{l:'Año Nuevo',s:'<circle cx="50" cy="50" r="46" fill="none" stroke="#F7DC8A" stroke-width="3"/>'+[[50,4,9,4],[10,28,6,2.6],[90,28,6,2.6],[16,82,7,3],[84,82,7,3],[50,97,5,2.2]].map(([x,y,R,r])=>star(x,y,R,r,'#FFD97A')).join('')},
+ f_halloween:{l:'Halloween',s:'<circle cx="50" cy="50" r="46" fill="none" stroke="#F7B27A" stroke-width="3.5"/><ellipse cx="50" cy="7" rx="11" ry="8" fill="#F7A55E" stroke="#fff" stroke-width="1.2"/><rect x="48" y="-2" width="4" height="6" rx="1.5" fill="#8CCB9B"/><path d="M6 76q5-9 10 0q3-4 6 2q-8 4-16-2z" fill="#9B8CC4"/><path d="M78 76q5-9 10 0q3-4 6 2q-8 4-16-2z" fill="#9B8CC4"/>'},
+ f_sanvalentin:{l:'San Valentín',s:'<circle cx="50" cy="50" r="46" fill="none" stroke="#F7B8C8" stroke-width="3"/>'+[[50,2,'#F06292'],[2,38,'#F8A5C2'],[88,38,'#F8A5C2'],[14,78,'#F06292'],[76,78,'#F06292']].map(([x,y,c])=>heart(x-5,y-5,.8,c)).join('')},
+ f_mujer:{l:'Día de la Mujer',s:'<circle cx="50" cy="50" r="46" fill="none" stroke="#C9B8F0" stroke-width="3"/>'+[[50,4],[8,34],[92,34],[18,84],[82,84]].map(([x,y])=>[0,72,144,216,288].map(a=>{const r=a*Math.PI/180;return `<circle cx="${(x+5*Math.cos(r)).toFixed(1)}" cy="${(y+5*Math.sin(r)).toFixed(1)}" r="3.4" fill="#F9A8D4"/>`}).join('')+`<circle cx="${x}" cy="${y}" r="2.6" fill="#FFD97A"/>`).join('')}
+});
+Object.assign(BG,{
+ atardecer:{l:'Atardecer',v:'linear-gradient(160deg,#FFE5D6,#F9D2E6 55%,#DCD3F7)'},
+ nube:{l:'Nube',v:'linear-gradient(160deg,#F2F8FF,#E3EEFB)'},
+ durazno:{l:'Durazno',v:'linear-gradient(160deg,#FFF1E3,#FFD9D2)'},
+ helado:{l:'Helado',v:'linear-gradient(160deg,#FFE3F1,#E1F5EA 55%,#E3ECFF)'},
+ bosque:{l:'Bosque',v:'linear-gradient(160deg,#E7F6E8,#D8EEE9)'},
+ oceano:{l:'Océano',v:'linear-gradient(160deg,#DFF1FB,#D8DDF8)'},
+ f_navidad:{l:'Navidad',v:'linear-gradient(160deg,#E6F5EA,#FBE4E4)'},
+ f_anonuevo:{l:'Año Nuevo',v:'linear-gradient(160deg,#EDE8FF,#FFF3D6)'},
+ f_halloween:{l:'Halloween',v:'linear-gradient(160deg,#FFE9D6,#E5DCF5)'},
+ f_sanvalentin:{l:'San Valentín',v:'linear-gradient(160deg,#FFE3EC,#FFF0F5)'},
+ f_mujer:{l:'Día de la Mujer',v:'linear-gradient(160deg,#F1E6FB,#FFE6F1)'}
+});
+const BADGES=[['🎂','Pastelito'],['🌈','Arcoíris'],['🦄','Unicornio'],['🌟','Estrella'],['🍓','Fresita'],['🦋','Mariposa'],['🐱','Gatito'],['🍭','Paleta'],['🌸','Flor'],['🎀','Lazo'],['☁️','Nubecita'],['🍉','Sandía']];
+const BMSGS=[
+ 'Que este año nuevo venga lleno de cosas lindas y de calma.','Eres única y vas a tu propio ritmo, y eso está muy bien.','Que sigas descubriendo lo que te hace feliz.','Un año más de aprender, reír y crecer a tu manera.',
+ 'Cuida tu corazón, tu cuerpo y tus sueños. ¡Mereces todo lo bonito!','Que tengas muchos abrazos, risas y momentos tranquilos.','Cada año trae algo nuevo. ¡Qué emoción ver lo que viene!','Gracias por cuidarte y escucharte. Eso es valentía.',
+ 'Que tus días estén llenos de colores suaves y buena compañía.','Crecer es un viaje, y tú lo estás haciendo genial.','Hoy toca celebrar lo mucho que has avanzado.','Que este año te traiga confianza, amigas y mucha curiosidad.'
+];
+/* b = días antes de la fecha en que ya se activa, a = días después */
+const HOL=[
+ {id:'sanvalentin',n:'San Valentín',e:'💝',m:2,d:14,b:0,a:0,t:'¡Feliz San Valentín!',msg:'Hoy también es un día para quererte a ti misma y a tus amigas.',ins:['💝','Corazón'],parts:['💗','💖','💝','🌸']},
+ {id:'mujer',n:'Día de la Mujer',e:'🌷',m:3,d:8,b:0,a:0,t:'¡Feliz Día de la Mujer!',msg:'Hoy celebramos a todas las mujeres, y a ti que estás creciendo a tu ritmo.',ins:['🌷','Tulipán'],parts:['🌷','🌸','💜','✨']},
+ {id:'halloween',n:'Halloween',e:'🎃',m:10,d:31,b:1,a:0,t:'¡Feliz Halloween!',msg:'Que tengas una noche de risas, dulces y sustos muy suaves.',ins:['🎃','Calabacita'],parts:['🎃','🦇','👻','🍬']},
+ {id:'navidad',n:'Navidad',e:'🎄',m:12,d:25,b:1,a:1,t:'¡Feliz Navidad!',msg:'Que estos días estén llenos de calma, abrazos y cosas ricas.',ins:['🎄','Arbolito'],parts:['❄️','⭐','🎄','🎁']},
+ {id:'anonuevo',n:'Año Nuevo',e:'🎆',m:1,d:1,b:1,a:1,t:'¡Feliz Año Nuevo!',msg:'Un año nuevo para conocerte mejor y cuidarte con cariño.',ins:['🎆','Fuegos'],parts:['✨','🎆','⭐','🎊']}
+].map(h=>({...h,marco:'f_'+h.id.replace('sanvalentin','sanvalentin'),fondo:'f_'+h.id}));
+const HOLMAP=Object.fromEntries(HOL.map(h=>[h.id,h]));
+let bday=store.get('menarca_bday',null);
+let regalos=store.get('menarca_regalos',[]);
+function renderFrames(){
+  $('#frames').innerHTML=FR_BASE.concat(uniq(regalos.map(g=>g.marco))).filter(k=>FR[k]).map(k=>`<button class="fr" type="button" data-f="${k}" aria-pressed="false"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="#C9C2EE"/>${FR[k].s}</svg><span>${FR[k].l}</span></button>`).join('');
+}
+function renderBgs(){
+  $('#bgs').innerHTML=BG_BASE.concat(uniq(regalos.map(g=>g.fondo)).filter(k=>BG[k]&&!BG_BASE.includes(k)),['propio']).map(k=>`<button class="bgo" type="button" data-bg="${k}" style="background:${BG[k].v}">${BG[k].l}</button>`).join('');
+}
+function bdayInfo(){
+  if(!bday) return null;
+  const n=new Date(), t=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12);
+  let b=new Date(n.getFullYear(),bday.m-1,bday.d,12), diff=Math.round((b-t)/864e5);
+  if(diff<-6){b=new Date(n.getFullYear()+1,bday.m-1,bday.d,12);diff=Math.round((b-t)/864e5)}
+  return {diff,year:b.getFullYear()};
+}
+function renderBday(){
+  const D=$('#bd-d'),M=$('#bd-m');
+  if(!D.options.length){
+    D.innerHTML='<option value="">Día</option>'+Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('');
+    M.innerHTML='<option value="">Mes</option>'+MESES.map((x,i)=>`<option value="${i+1}">${x}</option>`).join('');
+  }
+  D.value=bday?bday.d:'';M.value=bday?bday.m:'';
+  const i=bdayInfo(); let t='Elige el día y el mes de tu cumpleaños.';
+  if(i) t=i.diff===0?'¡Hoy es tu cumpleaños! 🎉':i.diff<0?`Tu cumpleaños fue hace ${-i.diff} ${i.diff===-1?'día':'días'}.`:`Tu cumpleaños es el ${bday.d} de ${MESES[bday.m-1]}. Faltan ${i.diff} ${i.diff===1?'día':'días'} 🎈`;
+  $('#bday-info').textContent=t;
+  $('#bday-del').hidden=!bday;
+  $('#regalos').innerHTML=regalos.length?regalos.slice().reverse().map(g=>{
+    const ins=insOf(g), h=g.k&&HOLMAP[g.k];
+    return `<div class="gift"><span aria-hidden="true">${ins[0]}</span><div><b>${h?h.n+' ':''}${g.y}: ${ins[1]}</b><br><small>Marco ${(FR[g.marco]||FR.none).l} · Fondo ${(BG[g.fondo]||BG.lavanda).l}</small></div></div>`;
+  }).join(''):'<p class="muted" style="margin:0">Todavía no tienes regalos. ¡Llegan en tu cumpleaños y en las fiestas del año!</p>';
+}
+function saveBday(){
+  const d=+$('#bd-d').value, m=+$('#bd-m').value;
+  if(!d||!m) return;
+  if(d>[31,29,31,30,31,30,31,31,30,31,30,31][m-1]){$('#bday-info').textContent='Ese día no existe en ese mes.';return}
+  bday={d,m};store.set('menarca_bday',bday);
+  renderBday();renderHoy();renderCal();checkCelebs();
+}
+/* Fiestas */
+function holActive(h,now=new Date()){
+  const t=new Date(now.getFullYear(),now.getMonth(),now.getDate(),12);
+  for(const yr of [now.getFullYear()-1,now.getFullYear(),now.getFullYear()+1]){
+    const diff=Math.round((new Date(yr,h.m-1,h.d,12)-t)/864e5);
+    if(diff>=-h.a&&diff<=h.b) return yr;
+  }
+  return null;
+}
+function holNext(h){
+  const n=new Date(), t=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12);
+  for(const yr of [n.getFullYear(),n.getFullYear()+1]){
+    const diff=Math.round((new Date(yr,h.m-1,h.d,12)-t)/864e5);
+    if(diff>=0) return diff;
+  }
+  return 0;
+}
+function renderFest(){
+  $('#fest-list').innerHTML=HOL.map(h=>{
+    const act=holActive(h)!==null, own=regalos.filter(g=>g.k===h.id).length;
+    const st=act?'Es ahora 🎉':`${h.d} de ${MESES[h.m-1]} · faltan ${holNext(h)} días`;
+    return `<div class="fest"><span aria-hidden="true">${h.e}</span><div><b>${h.n}</b><small>${st}${own?` · ${own} ${own===1?'regalo':'regalos'}`:''}</small></div><button class="btn ghost" type="button" data-prev="${h.id}">Ver sorpresa</button></div>`;
+  }).join('');
+}
+let lastGift=null;
+function showCeleb(o){
+  const g=o.g, nick=prof.nick.trim();
+  lastGift=o.preview?null:g;
+  $('#bday-e').textContent=o.big;
+  $('#bday-t').textContent=o.title.replace('!',(nick?', '+nick:'')+'!');
+  $('#bday-m').textContent=(o.preview?'(Así será tu sorpresa.) ':'')+o.msg;
+  const ins=insOf(g);
+  $('#bday-g').innerHTML=`<div class="gift"><span aria-hidden="true">🖼️</span><div><b>Marco ${FR[g.marco].l}</b><br><small>Para tu foto de perfil</small></div></div><div class="gift"><span aria-hidden="true">🎨</span><div><b>Fondo ${BG[g.fondo].l}</b><br><small>Para tu página</small></div></div><div class="gift"><span aria-hidden="true">${ins[0]}</span><div><b>Insignia ${ins[1]}</b><br><small>Se verá en tu foto</small></div></div>`;
+  $('#confetti').innerHTML=Array.from({length:26},(_,i)=>`<span class="cf" style="left:${Math.random()*100}%;animation-delay:${(Math.random()*3).toFixed(2)}s;animation-duration:${(3+Math.random()*2).toFixed(2)}s">${o.parts[i%o.parts.length]}</span>`).join('');
+  $('#bday-use').hidden=o.preview;
+  $('#bday').hidden=false;
+  $('#bday-ok').focus();
+  if(!o.preview&&document.hidden) notify(o.big+' '+o.title,'Tienes regalos nuevos esperándote.','celeb');
+  renderPerfil();
+}
+function celebrate(preview,late,year){
+  const n=regalos.filter(g=>!g.k).length;
+  const g={y:year||new Date().getFullYear(),marco:FRX_KEYS[n%6],fondo:BGX_KEYS[n%6],badge:n%12,msg:n%12};
+  if(!preview){regalos.push(g);store.set('menarca_regalos',regalos)}
+  showCeleb({big:'🎂',title:late?'¡Feliz cumpleaños atrasado!':'¡Feliz cumpleaños!',msg:BMSGS[g.msg],g,preview,parts:['🎈','🎉','✨','🍰']});
+}
+function celebHol(h,yr,preview){
+  const g={k:h.id,y:yr,marco:h.marco,fondo:h.fondo,ins:h.ins,t:Date.now()};
+  if(!preview){regalos.push(g);store.set('menarca_regalos',regalos)}
+  showCeleb({big:h.e,title:h.t,msg:h.msg,g,preview,parts:h.parts});
+}
+function checkBday(){
+  const i=bdayInfo();
+  if(!i||i.diff>0||i.diff<-6) return false;
+  if(regalos.some(g=>(!g.k)&&g.y===i.year)) return false;
+  celebrate(false,i.diff<0,i.year);return true;
+}
+function checkCelebs(){
+  if(!$('#lock').hidden||!$('#bday').hidden) return;
+  if(checkBday()) return;
+  for(const h of HOL){
+    const yr=holActive(h);
+    if(yr!==null&&!regalos.some(g=>g.k===h.id&&g.y===yr)){celebHol(h,yr,false);return}
+  }
+}
+
+/* ---------- Bloqueo con patrón ---------- */
+const hasPat=()=>!!store.get('menarca_pat',null);
+const sesOn=()=>{try{return sessionStorage.getItem('menarca_sesion')==='1'}catch(e){return false}};
+const setSes=v=>{try{v?sessionStorage.setItem('menarca_sesion','1'):sessionStorage.removeItem('menarca_sesion')}catch(e){}};
+const setInert=b=>['main','header.top','#bnav','#tip','#drawer'].forEach(s=>{const e=$(s);if(e)e.inert=b});
+async function hashPat(seq,alg){
+  const s='menarca-pat:'+seq.join('-');
+  if(alg!=='d'){
+    try{if(window.crypto&&crypto.subtle){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return 's'+[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}}catch(e){}
+  }
+  let h=5381;for(const c of s)h=((h<<5)+h+c.charCodeAt(0))|0;
+  return 'd'+(h>>>0).toString(16);
+}
+async function savePat(seq){store.set('menarca_pat',await hashPat(seq))}
+async function checkPat(seq){const saved=store.get('menarca_pat','');return !!saved&&(await hashPat(seq,saved[0]))===saved}
+function mkPattern(host,onDone,onStart){
+  host.innerHTML='<svg viewBox="0 0 260 260" aria-hidden="true"><polyline points="" fill="none"/></svg>'+Array.from({length:9},(_,i)=>`<button type="button" class="pdot" data-i="${i}" aria-label="Punto ${i+1}"><i></i></button>`).join('');
+  const pl=host.querySelector('polyline'), dots=$$('.pdot',host);
+  let seq=[],down=false,prev=null,lock=false;
+  const C=i=>[(i%3)*86.67+43.33,Math.floor(i/3)*86.67+43.33];
+  const draw=p=>{const pts=seq.map(i=>C(i).join(','));if(p)pts.push(p.join(','));pl.setAttribute('points',pts.join(' '))};
+  const add=i=>{
+    if(seq.includes(i)) return;
+    if(seq.length){
+      const a=seq[seq.length-1],ax=a%3,ay=Math.floor(a/3),bx=i%3,by=Math.floor(i/3),dx=bx-ax,dy=by-ay;
+      if(dx%2===0&&dy%2===0&&(Math.abs(dx)===2||Math.abs(dy)===2)){const mid=((ay+by)/2)*3+(ax+bx)/2;if(!seq.includes(mid)){seq.push(mid);dots[mid].classList.add('on')}}
+    }
+    seq.push(i);dots[i].classList.add('on');
+  };
+  const pos=e=>{const r=host.getBoundingClientRect();return [(e.clientX-r.left)*260/r.width,(e.clientY-r.top)*260/r.height]};
+  const hit=(x,y)=>{for(let i=0;i<9;i++){const [cx,cy]=C(i);if(Math.hypot(x-cx,y-cy)<30)return i}return -1};
+  const reset=()=>{seq=[];down=false;prev=null;host.dataset.state='';dots.forEach(d=>d.classList.remove('on'));draw()};
+  const finish=()=>{if(seq.length){const s=[...seq];onDone(s)}};
+  host.addEventListener('pointerdown',e=>{
+    if(lock) return;
+    e.preventDefault();
+    reset();onStart&&onStart();down=true;host.setPointerCapture(e.pointerId);
+    const p=pos(e);prev=p;const i=hit(...p);if(i>=0)add(i);draw(p);
+  });
+  host.addEventListener('pointermove',e=>{
+    if(!down) return;
+    const p=pos(e);
+    for(let k=1;k<=8;k++){const x=prev[0]+(p[0]-prev[0])*k/8,y=prev[1]+(p[1]-prev[1])*k/8,i=hit(x,y);if(i>=0)add(i)}
+    prev=p;draw(p);
+  });
+  const up=()=>{if(!down) return;down=false;draw();finish()};
+  host.addEventListener('pointerup',up);
+  host.addEventListener('pointercancel',up);
+  dots.forEach(b=>b.addEventListener('keydown',e=>{
+    if(e.key==='Enter'||e.key===' '){e.preventDefault();if(!seq.length)onStart&&onStart();add(+b.dataset.i);draw()}
+  }));
+  return {reset,finish,flash(){lock=true;host.dataset.state='err';setTimeout(()=>{lock=false;reset()},650)}};
+}
+let pat=null,lockMode='unlock',lockTmp=null,changing=false,fails=0,lockUntil=0;
+function paintLock(){
+  const T={
+    setup:['Crea tu patrón','Une al menos 4 puntos con el dedo. Lo usarás cada vez que entres.'],
+    confirm:['Dibújalo otra vez','Repite el mismo patrón para confirmarlo.'],
+    unlock:['Dibuja tu patrón','Tus datos siguen solo en este dispositivo.'],
+    verify:['Tu patrón actual','Dibújalo para poder cambiarlo.']
+  }[lockMode];
+  $('#lock-t').textContent=T[0];$('#lock-p').textContent=T[1];
+  $('#lock-cancel').hidden=!((lockMode==='verify')||changing);
+  $('#lock-reset').hidden=!(lockMode==='unlock'||lockMode==='verify');
+}
+function openLock(mode){
+  lockMode=mode;lockTmp=null;
+  if(mode==='verify'||mode==='unlock') changing=false;
+  $('#lock').hidden=false;setInert(true);closeDrawer();
+  $('#lock-err').hidden=true;paintLock();pat.reset();
+}
+function closeLock(){
+  $('#lock').hidden=true;setInert(false);changing=false;lockTmp=null;
+  setTimeout(()=>{checkCelebs()},300);
+}
+function lockErr(t){const e=$('#lock-err');e.textContent=t;e.hidden=false;pat.flash()}
+async function onPattern(seq){
+  if(lockMode==='setup'||lockMode==='confirm'){
+    if(seq.length<4){lockErr('Une al menos 4 puntos.');return}
+    if(lockMode==='setup'){lockTmp=seq.join('-');lockMode='confirm';paintLock();pat.reset();return}
+    if(seq.join('-')===lockTmp){
+      await savePat(seq);store.del('menarca_pin');setSes(true);closeLock();showTip('Listo, tu patrón quedó guardado en este dispositivo.');
+    }else{lockMode='setup';lockTmp=null;lockErr('No coincide. Empieza de nuevo.');paintLock()}
+    return;
+  }
+  if(Date.now()<lockUntil){lockErr('Espera unos segundos antes de intentar otra vez.');return}
+  if(await checkPat(seq)){
+    fails=0;$('#lock-err').hidden=true;
+    if(lockMode==='verify'){changing=true;lockMode='setup';paintLock();pat.reset()}
+    else{setSes(true);closeLock()}
+  }else{
+    fails++;
+    if(fails>=5){fails=0;lockUntil=Date.now()+30000;lockErr('Demasiados intentos. Espera 30 segundos.')}
+    else lockErr('Patrón incorrecto.');
+  }
+}
+function dlg(t,p,ok,onOk){
+  $('#dlg-t').textContent=t;$('#dlg-p').textContent=p;$('#dlg-ok').textContent=ok;
+  $('#dlg').hidden=false;$('#dlg-no').focus();
+  $('#dlg-ok').onclick=()=>{$('#dlg').hidden=true;onOk()};
+  $('#dlg-no').onclick=()=>{$('#dlg').hidden=true};
+}
+function wipe(){Object.keys(localStorage).filter(k=>k.startsWith('menarca_')).forEach(k=>localStorage.removeItem(k));setSes(false);location.reload()}
+function openDrawer(){$('#drawer').classList.add('on');$('#scrim').hidden=false;$('#burger').setAttribute('aria-expanded','true')}
+function closeDrawer(){$('#drawer').classList.remove('on');$('#scrim').hidden=true;$('#burger').setAttribute('aria-expanded','false')}
+
+/* ---------- Arranque ---------- */
+function init(){
+  // Bloqueo primero
+  pat=mkPattern($('#pat'),onPattern,()=>{$('#lock-err').hidden=true});
+  $('#lock-ok').onclick=()=>pat.finish();
+  $('#lock-cancel').onclick=()=>{if($('#lock').hidden)return;if(hasPat())closeLock()};
+  $('#lock-reset').onclick=()=>dlg('Borrar todo','Se borrarán el patrón y todos los datos de este dispositivo. No se puede deshacer.','Borrar todo',wipe);
+  if(!hasPat()) openLock('setup');
+  else if(!sesOn()) openLock('unlock');
+  else{$('#lock').hidden=true;setInert(false)}
+
+  $('#edad').innerHTML='<option value="">Años</option>'+[9,10,11,12,13,14,15,16,17,18].map(n=>`<option value="${n}">${n} años</option>`).join('');
+  $('#meses').innerHTML=[0,1,2,3,4,5,6,7,8,9,10,11].map(n=>`<option value="${n}">${n} ${n===1?'mes':'meses'}</option>`).join('');
+  $('#qs').innerHTML=QS.map(([n,q,o])=>`<fieldset><legend>${q}</legend><div class="opts">${o.map(([v,t])=>`<label><input type="radio" name="${n}" value="${v}"><span>${t}</span></label>`).join('')}</div></fieldset>`).join('');
+  const bn=$('#bnav');
+  NAV.forEach(n=>bn.insertBefore(mkNav(n),bn.querySelector('.fab')));
+  $('#cards-que').innerHTML=CARDS.map(c=>`<article class="card"><h2>${c.t}</h2><p class="muted" style="margin:0">${c.p}</p></article>`).join('');
+  $('#hist-del').onclick=()=>{
+    const keep=store.get('menarca_animo',[]).map(x=>({...x,m:null})).filter(x=>x.periodo==='si'||(x.dolor&&x.dolor.length)||(x.flujo&&x.flujo!=='ninguno')||x.nota);
+    if(keep.length) store.set('menarca_animo',keep); else store.del('menarca_animo');
+    renderHistory();renderHoy();renderCal();renderDay();renderPron();renderTips();
+  };
+  // Estimar
+  $('#f').addEventListener('submit',e=>{
+    e.preventDefault();
+    const fd=Object.fromEntries(new FormData(e.target));
+    const fsets=$$('#f fieldset'); fsets.forEach(x=>x.classList.remove('miss'));
+    const missing=[]; if(!fd.edad) missing.push(fsets[0]);
+    QS.forEach(([n],i)=>{if(!fd[n]) missing.push(fsets[i+1])});
+    if(missing.length){
+      missing.forEach(x=>x.classList.add('miss'));
+      $('#err').textContent='Falta responder lo que está marcado con línea rosa.';
+      $('#err').hidden=false;
+      missing[0].scrollIntoView({behavior:RM.matches?'auto':'smooth',block:'center'});
+      return;
+    }
+    $('#err').hidden=true;
+    const r=estimar(fd);
+    store.set('menarca_etapa',{etapa:r.etapa,fecha:iso(new Date()),wMin:r.wMin,wMax:r.wMax,sig:{mamas:fd.mamas==='si',vello:['axilas','publica','ambas'].includes(fd.vello),crece:fd.crece==='m4a7'||fd.crece==='mas7',flujo:fd.flujo==='si'}});
+    renderHoy();renderPron();
+    showResult(r,+fd.edad);
+  });
+  $('#f').addEventListener('change',e=>{const fs=e.target.closest('fieldset');if(fs)fs.classList.remove('miss')});
+  // Perfil: foto
+  $('#b-up').onclick=()=>$('#f-up').click();
+  $('#b-cam').onclick=()=>$('#f-cam').click();
+  [$('#f-up'),$('#f-cam')].forEach(inp=>inp.addEventListener('change',()=>{const f=inp.files[0];if(f)readFile(f,openCrop);inp.value=''}));
+  $('#zoom').addEventListener('input',e=>{if(!crop)return;crop.z=+e.target.value;layoutCrop()});
+  const stage=$('#crop');
+  stage.addEventListener('pointerdown',e=>{if(!crop)return;drag={x:e.clientX,y:e.clientY,ox:crop.x,oy:crop.y};stage.setPointerCapture(e.pointerId)});
+  stage.addEventListener('pointermove',e=>{if(!drag||!crop)return;crop.x=drag.ox+e.clientX-drag.x;crop.y=drag.oy+e.clientY-drag.y;layoutCrop()});
+  ['pointerup','pointercancel'].forEach(t=>stage.addEventListener(t,()=>drag=null));
+  $('#crop-cancel').onclick=closeCrop;
+  $('#crop-save').onclick=()=>{
+    if(!crop) return;
+    const c=document.createElement('canvas');c.width=c.height=256;
+    const g=c.getContext('2d'),k=256/S;
+    const W=crop.w*crop.s,H=crop.h*crop.s,x=(S-W)/2+crop.x,y=(S-H)/2+crop.y;
+    g.fillStyle='#fff';g.fillRect(0,0,256,256);
+    g.beginPath();g.arc(128,128,128,0,Math.PI*2);g.clip();
+    g.drawImage(crop.img,x*k,y*k,W*k,H*k);
+    const data=c.toDataURL('image/jpeg',.85);
+    foto=data;
+    if(!store.set('menarca_foto',data)) alert('El dispositivo no tiene espacio para guardar la foto. Se verá solo en esta sesión.');
+    closeCrop();renderAvatar();
+  };
+  $('#b-nofoto').onclick=()=>{foto=null;store.del('menarca_foto');renderAvatar()};
+  $('#frames').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(!b)return;prof.frame=b.dataset.f;saveProf();renderPerfil()});
+  $('#nick').addEventListener('input',e=>{prof.nick=e.target.value.slice(0,20);saveProf();renderAvatar()});
+  $('#bgs').addEventListener('click',e=>{
+    const b=e.target.closest('[data-bg]');if(!b)return;
+    const k=b.dataset.bg;
+    if(k==='propio'&&(!fondo||prof.bg==='propio')){$('#f-bg').click();return}
+    prof.bg=k;saveProf();renderPerfil();
+  });
+  $('#bg-up').onclick=()=>$('#f-bg').click();
+  $('#bg-del').onclick=()=>{
+    fondo=null;store.del('menarca_fondo');
+    if(prof.bg==='propio') prof.bg='lavanda';
+    saveProf();renderPerfil();$('#bg-msg').textContent='Quité tu imagen de fondo.';
+  };
+  $('#f-bg').addEventListener('change',e=>{
+    const f=e.target.files[0];if(!f)return;
+    const msg=$('#bg-msg');
+    if(!/^image\//.test(f.type)){msg.textContent='Ese archivo no es una imagen.';e.target.value='';return}
+    msg.textContent='Cargando imagen…';
+    readFile(f,src=>shrink(src,1280,.8,data=>{
+      fondo=data;
+      const ok=store.set('menarca_fondo',data);
+      prof.bg='propio';saveProf();renderPerfil();
+      msg.textContent=ok?'Listo, tu fondo se guardó.':'Tu fondo se ve ahora, pero no se pudo guardar en este dispositivo.';
+    }));
+    e.target.value='';
+  });
+  $('#sw-sp').onclick=()=>{prof.sparkle=!prof.sparkle;saveProf();renderPerfil()};
+  RM.addEventListener?.('change',renderSpark);
+  $('#b-borrar').onclick=()=>{
+    if(!confirm('¿Borrar tu perfil? Se quitan la foto, el marco, el fondo, el apodo y los brillitos.')) return;
+    ['menarca_perfil','menarca_foto','menarca_fondo'].forEach(k=>store.del(k));
+    prof={nick:'',frame:'none',bg:'lavanda',sparkle:false};foto=null;fondo=null;
+    renderPerfil();
+  };
+  // Registro diario
+  $('#reg-moods').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const v=+b.dataset.rm;regMood=regMood===v?null:v;$$('#reg-moods .mood').forEach(x=>{const on=+x.dataset.rm===regMood;x.classList.toggle('on',on);x.setAttribute('aria-pressed',String(on))});liveTips()});
+  $('#day-card').addEventListener('change',()=>{syncInt();liveTips()});
+  $('#cal').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(!b)return;selDay=b.dataset.d;renderCal();renderDay();if(matchMedia('(max-width:767px)').matches)$('#day-card').scrollIntoView({behavior:RM.matches?'auto':'smooth',block:'start'})});
+  $('#cal-prev').onclick=()=>{calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()-1,1);renderCal()};
+  $('#cal-next').onclick=()=>{calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+1,1);renderCal()};
+  $('#reg-save').onclick=saveDay;
+  $('#reg-del').onclick=delDay;
+  // Menú
+  $('#burger').onclick=openDrawer;$('#scrim').onclick=closeDrawer;$('#dr-x').onclick=closeDrawer;
+  $('#dr-lock').onclick=()=>{setSes(false);openLock('unlock')};
+  $('#dr-chg').onclick=()=>openLock('verify');
+  $('#dr-del').onclick=()=>{closeDrawer();dlg('Eliminar todos mis datos','Se borrarán tu patrón, tu calendario, tu perfil, tus fotos, tus regalos y tu historial de este dispositivo. No se puede deshacer.','Eliminar todo',wipe)};
+  // Tema y arranque
+  setTheme(store.get('menarca_tema',null)||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),false);
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',e=>{if(!store.get('menarca_tema',null))setTheme(e.matches?'dark':'light',false)});
+  paintInstall();
+  renderPerfil();
+  setupPwa();
+  renderHome();
+  $('#rut-list').addEventListener('click',rutClick);
+  $('#rut-hoy').addEventListener('click',rutClick);
+  $('#rut-list').addEventListener('change',rutChange);
+  $('#rut-add').addEventListener('click',e=>{
+    const b=e.target.closest('[data-add]');if(!b)return;
+    const p=RUT_PRE.find(x=>x.id===b.dataset.add);
+    if(p&&!rut.items.some(x=>x.id===p.id)){rut.items.push({id:p.id,n:p.n,e:p.e,goal:p.goal,rem:false,every:120,from:'08:00',to:'20:00'});saveRut();renderRutinas()}
+  });
+  $('#rut-form').addEventListener('submit',e=>{
+    e.preventDefault();
+    const i=$('#rut-new'),n=i.value.trim().slice(0,30);
+    if(!n||rut.items.length>=12)return;
+    rut.items.push({id:'c'+Date.now(),n,e:'⭐',goal:1,rem:false,every:120,from:'08:00',to:'20:00'});
+    i.value='';saveRut();renderRutinas();
+  });
+  $('#bd-d').addEventListener('change',saveBday);$('#bd-m').addEventListener('change',saveBday);
+  $('#bday-test').onclick=()=>celebrate(true,false);
+  $('#bday-del').onclick=()=>{bday=null;store.del('menarca_bday');renderBday();renderHoy();renderCal()};
+  $('#fest-list').addEventListener('click',e=>{
+    const b=e.target.closest('[data-prev]');if(!b)return;
+    const h=HOLMAP[b.dataset.prev];if(h) celebHol(h,new Date().getFullYear(),true);
+  });
+  $('#bday-ok').onclick=()=>{$('#bday').hidden=true;renderHoy();setTimeout(checkCelebs,400)};
+  $('#bday-use').onclick=()=>{
+    if(lastGift){prof.frame=lastGift.marco;prof.bg=lastGift.fondo;saveProf()}
+    $('#bday').hidden=true;go('perfil');
+  };
+  setTimeout(checkCelebs,900);
+  $('#notif-on').onclick=askNotif;
+  $('#notif-test').onclick=()=>notify('💧 ¡Hora de beber agua!','Así te llegará el aviso. Toma un vaso cuando puedas.','test');
+  setInterval(tick,20000);
+  let hiddenAt=0;
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){hiddenAt=Date.now();return}
+    if(hasPat()&&hiddenAt&&Date.now()-hiddenAt>3*60000&&$('#lock').hidden){setSes(false);openLock('unlock')}
+    else tick();
+  });
+  setTimeout(tick,4000);
+  const h=location.hash.slice(1);
+  if(['inicio','estimar','registro','perfil','preguntas','queesperar'].includes(h)) go(h);
+}
+init();
+</script>
+</body>
+</html>

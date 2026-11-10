@@ -1,0 +1,6 @@
+{
+  "name": "Estimar menarca",
+  "description": "Calendario menstrual adolescente, estimación de menarca, pronóstico de 7 días con síntomas hormonales, tips educativos y sistema de celebraciones con regalos exclusivos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
