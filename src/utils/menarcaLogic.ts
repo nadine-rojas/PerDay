@@ -27,6 +27,7 @@ export interface WallpaperAsset {
   value: string;
   image?: string;
   eventName?: string;
+  dayNumber?: number;
 }
 
 export interface VirtualPetAsset {
@@ -36,7 +37,7 @@ export interface VirtualPetAsset {
   species: 'Gato' | 'Perro' | 'Zorro' | 'Amigos';
   emoji: string;
   image: string;
-  greeting: string;
+  caption: string;
 }
 
 export interface HolidayRewardItem {
@@ -72,13 +73,13 @@ export interface HolidayEvent {
 export interface DayEntry {
   d: string;
   m?: number | null;
+  moods?: number[];
   dolor?: string[];
   flujo?: string;
   nota?: string;
   periodo?: 'si' | 'no';
   intensidad?: 'ligera' | 'normal' | 'fuerte' | null;
   peso?: number | null;
-  agua?: number;
 }
 
 export interface MenarcaEstimate {
@@ -88,234 +89,340 @@ export interface MenarcaEstimate {
   wMax: number;
   flujo?: boolean;
   rango?: string;
+  symptomCountUsed?: number;
+  matchedSymptoms?: string[];
   sig?: {
     mamas: boolean;
     vello: boolean;
     crece: boolean;
     flujo: boolean;
+    sintomas?: boolean;
   };
 }
 
+/**
+ * 3. Mascotas Decorativas (Inicio):
+ * Reemplaza todas las mascotas con las 21 nuevas imágenes transparentes (-Photoroom.png).
+ * Son puramente decorativas para adornar el Inicio sin necesidad de alimentarlas ni cuidarlas.
+ */
 export const VIRTUAL_PETS: VirtualPetAsset[] = [
   {
-    id: 'mascota_gato_chef',
-    codeName: 'mascota_gato.jpg',
+    id: 'mascota_michi_chef',
+    codeName: '@_artizzy chef tom-Photoroom.png',
     defaultName: 'Mochi Chef',
     species: 'Gato',
     emoji: '🐱',
-    image: '/assets/aistudio/__artizzy_chef_tom_7bf7e845.jpg',
-    greeting: '¡Miau! Preparé una sopita calentita para acompañarte hoy 🍲💖',
-  },
-  {
-    id: 'mascota_perro_flor',
-    codeName: 'mascota_perro.jpg',
-    defaultName: 'Canela',
-    species: 'Perro',
-    emoji: '🐶',
-    image: '/assets/aistudio/Chihuahua_holding_flower_b7ff8380.jpg',
-    greeting: '¡Guau! Te traje una margarita para alegrar tu día 🌼🐾',
+    image: '/assets/aistudio/__artizzy_chef_tom-Photoroom_e27bedae.png',
+    caption: 'Gatita pastelera preparando algo rico para tu día ✨',
   },
   {
     id: 'mascota_gato_estambre',
-    codeName: 'mascota_gato_estambre.jpg',
+    codeName: '864972672175678121-Photoroom.png',
     defaultName: 'Mandarina',
     species: 'Gato',
     emoji: '🧶',
-    image: '/assets/aistudio/864972672175678121_5879ec22.jpg',
-    greeting: 'Abrazando mi bolita de estambre azul mientras descansas 🧶💤',
+    image: '/assets/aistudio/864972672175678121-Photoroom_d507ab4b.png',
+    caption: 'Descansando sobre su bolita de estambre azul 💤',
   },
   {
     id: 'mascota_zorro_hojita',
-    codeName: 'mascota_zorro.jpg',
+    codeName: 'Naranjita yt furry-Photoroom.png',
     defaultName: 'Naranjita',
     species: 'Zorro',
     emoji: '🦊',
-    image: '/assets/aistudio/Naranjita_yt_furry_d8adfe9b.jpg',
-    greeting: '¡Hola! Mi hojita de la suerte te acompaña hoy 🌱✨',
+    image: '/assets/aistudio/Naranjita_yt_furry-Photoroom_5cd8b2f6.png',
+    caption: 'Zorrito con su hojita verde de la buena suerte 🌱',
+  },
+  {
+    id: 'mascota_perro_flor',
+    codeName: 'Chihuahua holding flower-Photoroom.png',
+    defaultName: 'Canela',
+    species: 'Perro',
+    emoji: '🌼',
+    image: '/assets/aistudio/Chihuahua_holding_flower-Photoroom_e54960b3.png',
+    caption: 'Perrita sosteniendo una margarita para decorar tu inicio 🌸',
   },
   {
     id: 'mascota_perro_orejon',
-    codeName: 'mascota_perro_orejon.jpg',
+    codeName: '932245191610450385-Photoroom.png',
     defaultName: 'Trufa',
     species: 'Perro',
-    emoji: '🐕',
-    image: '/assets/aistudio/932245191610450385_11ffe6a4.jpg',
-    greeting: '¡Estoy aquí para escucharte y darte ánimos siempre! 🐾💛',
-  },
-  {
-    id: 'mascota_gato_sudadera',
-    codeName: 'mascota_gato_hoodie.jpg',
-    defaultName: 'Sombra',
-    species: 'Gato',
-    emoji: '🐈‍⬛',
-    image: '/assets/aistudio/hoodie_cat_f7693b4d.jpg',
-    greeting: 'Con mi sudadera favorita lista para un día cómodo y tranquilo 🖤✨',
-  },
-  {
-    id: 'mascota_gato_mono',
-    codeName: 'mascota_gato_mono.jpg',
-    defaultName: 'Perlita',
-    species: 'Gato',
-    emoji: '🎀',
-    image: '/assets/aistudio/1104859721110146721_3599b3d7.jpg',
-    greeting: '¡Me puse mi moñito rosa para verte sonreír hoy! 🎀🐱',
-  },
-  {
-    id: 'mascota_perro_estrella',
-    codeName: 'mascota_perro_estrella.jpg',
-    defaultName: 'Lucero',
-    species: 'Perro',
-    emoji: '⭐',
-    image: '/assets/aistudio/Spicymochi___spicymochii__on_X_3566b9d9.jpg',
-    greeting: '¡Brillas muchísimo hoy! Recuerda tomar agüita 🌟🐶',
-  },
-  {
-    id: 'mascota_tortuga',
-    codeName: 'mascota_tortuga.jpg',
-    defaultName: 'Burbuja',
-    species: 'Amigos',
-    emoji: '🐢',
-    image: '/assets/aistudio/915145586792760691_b527fbca.jpg',
-    greeting: 'Paso a pasito y a tu propio ritmo, como en el mar azul 🫧🐢',
-  },
-  {
-    id: 'mascota_hamster',
-    codeName: 'mascota_hamster.jpg',
-    defaultName: 'Avellana',
-    species: 'Amigos',
-    emoji: '🐹',
-    image: '/assets/aistudio/hamsterrrrrrrrrrrrr_9fbc34d5.jpg',
-    greeting: '¡Guardé semillitas y buena energía para ti! 🐹🌻',
+    emoji: '🐶',
+    image: '/assets/aistudio/932245191610450385-Photoroom_c76034ba.png',
+    caption: 'Cachorrito orejón acompañando tu calendario 🐾',
   },
   {
     id: 'mascota_tiburon',
-    codeName: 'mascota_tiburon.jpg',
+    codeName: 'Cute Shark-Photoroom.png',
     defaultName: 'Coral',
     species: 'Amigos',
     emoji: '🦈',
-    image: '/assets/aistudio/____Cute_Shark_____ef1511cd.jpg',
-    greeting: '¡Un chapuzón de alegría! No olvides tus vasos de agua 💧🦈',
+    image: '/assets/aistudio/____Cute_Shark____-Photoroom_25c55d31.png',
+    caption: 'Tiburoncito azul entre burbujas marinas 🫧',
   },
   {
-    id: 'mascota_buho',
-    codeName: 'mascota_buho.jpg',
-    defaultName: 'Nieve',
+    id: 'mascota_nutria',
+    codeName: '354869645653817293-Photoroom.png',
+    defaultName: 'Moka',
     species: 'Amigos',
-    emoji: '🦉',
-    image: '/assets/aistudio/1084874997754779594_79a3c054.jpg',
-    greeting: 'Cuido tus sueños para que descanses súper bien esta noche 🌙🦉',
+    emoji: '🦦',
+    image: '/assets/aistudio/354869645653817293-Photoroom_c37443fa.png',
+    caption: 'Nutria tranquila sonriendo en tu pantalla 💕',
+  },
+  {
+    id: 'mascota_pajarito',
+    codeName: '757238124895603478-Photoroom.png',
+    defaultName: 'Pío',
+    species: 'Amigos',
+    emoji: '🐦',
+    image: '/assets/aistudio/757238124895603478-Photoroom_c31c083f.png',
+    caption: 'Gorrioncito alegre revoloteando entre hojitas 🍂',
+  },
+  {
+    id: 'mascota_huron',
+    codeName: '1095993259441925859-Photoroom.png',
+    defaultName: 'Bambú',
+    species: 'Amigos',
+    emoji: '🐾',
+    image: '/assets/aistudio/1095993259441925859-Photoroom_67fb862d.png',
+    caption: 'Hurón sonriente lleno de buena vibra 🌟',
+  },
+  {
+    id: 'mascota_jirafa',
+    codeName: '935763628825987852-Photoroom.png',
+    defaultName: 'Melodía',
+    species: 'Amigos',
+    emoji: '🦒',
+    image: '/assets/aistudio/935763628825987852-Photoroom_b7a59cad.png',
+    caption: 'Jirafita con moño rosa y estrellitas ✨',
+  },
+  {
+    id: 'mascota_cachorro_peludo',
+    codeName: '1151303092292475125-Photoroom.png',
+    defaultName: 'Roco',
+    species: 'Perro',
+    emoji: '🐕',
+    image: '/assets/aistudio/1151303092292475125-Photoroom_f7864570.png',
+    caption: 'Perrito peludo y simpático de guardia en tu diario 🐶',
+  },
+  {
+    id: 'mascota_duo_abrazo',
+    codeName: 'cute matching pfp-Photoroom.png',
+    defaultName: 'Copito y Miel',
+    species: 'Amigos',
+    emoji: '💖',
+    image: '/assets/aistudio/cute_matching_pfp-Photoroom_edf319c9.png',
+    caption: 'Gatito y perrito dándose un abrazo gigante 🤍',
+  },
+  {
+    id: 'mascota_chihuahua',
+    codeName: '1083889835346398903-Photoroom.png',
+    defaultName: 'Chispita',
+    species: 'Perro',
+    emoji: '🐶',
+    image: '/assets/aistudio/1083889835346398903-Photoroom_ae402579.png',
+    caption: 'Mirada curiosa y tierna para alegrar tu inicio 🌟',
+  },
+  {
+    id: 'mascota_gato_mono',
+    codeName: '1104859721110146721-Photoroom.png',
+    defaultName: 'Perlita',
+    species: 'Gato',
+    emoji: '🎀',
+    image: '/assets/aistudio/1104859721110146721-Photoroom_daed49a9.png',
+    caption: 'Gatita gris con moñito mostrando sus patitas 🐾',
+  },
+  {
+    id: 'mascota_perro_estrella',
+    codeName: 'Spicymochi-Photoroom.png',
+    defaultName: 'Lucero',
+    species: 'Perro',
+    emoji: '⭐',
+    image: '/assets/aistudio/Spicymochi___spicymochii__on_X-Photoroom_e6883b5a.png',
+    caption: 'Cachorrito con disfraz de estrella brillante 🌟',
+  },
+  {
+    id: 'mascota_mama_perrita',
+    codeName: '840765824214721840-Photoroom.png',
+    defaultName: 'Vainilla',
+    species: 'Perro',
+    emoji: '🐩',
+    image: '/assets/aistudio/840765824214721840-Photoroom_a971fa79.png',
+    caption: 'Descansando en su tapete rosa con sus cachorritos 💕',
+  },
+  {
+    id: 'mascota_hamster',
+    codeName: 'hamsterrrrrrrrrrrrr-Photoroom.png',
+    defaultName: 'Avellana',
+    species: 'Amigos',
+    emoji: '🐹',
+    image: '/assets/aistudio/hamsterrrrrrrrrrrrr-Photoroom_45f10135.png',
+    caption: 'Hamstercito redondito y suave como un malvavisco ☁️',
+  },
+  {
+    id: 'mascota_lobito',
+    codeName: '1148840186235469647-Photoroom.png',
+    defaultName: 'Lobo Gris',
+    species: 'Perro',
+    emoji: '🐺',
+    image: '/assets/aistudio/1148840186235469647-Photoroom_c7b61602.png',
+    caption: 'Lobito sonriente con mejillas sonrojadas ✨',
+  },
+  {
+    id: 'mascota_pastor',
+    codeName: 'TearsOfThemis-Photoroom.png',
+    defaultName: 'Max',
+    species: 'Perro',
+    emoji: '🐕‍🦺',
+    image: '/assets/aistudio/_TearsOfThemis_______-Photoroom_fe04cff6.png',
+    caption: 'Cachorro lleno de destellos y flores de alegría 🌸',
+  },
+  {
+    id: 'mascota_gato_hoodie',
+    codeName: 'hoodie cat-Photoroom.png',
+    defaultName: 'Sombra',
+    species: 'Gato',
+    emoji: '🐈‍⬛',
+    image: '/assets/aistudio/hoodie_cat-Photoroom_18ee0d77.png',
+    caption: 'Michi con su sudadera cómoda favorita 🖤',
+  },
+  {
+    id: 'mascota_castanita',
+    codeName: '862650503665474597-Photoroom.png',
+    defaultName: 'Castañita',
+    species: 'Amigos',
+    emoji: '🎀',
+    image: '/assets/aistudio/862650503665474597-Photoroom_8e1d0e47.png',
+    caption: 'Amiguito elegante con corbata saludándote alegremente 🎉',
   },
 ];
 
+/**
+ * 2. 10 Fondos Diarios:
+ * El sistema regala uno de estos 10 fondos nuevos cada día que la usuaria entra a PerDay seguido.
+ */
 export const DAILY_WALLPAPERS: WallpaperAsset[] = [
   {
-    id: 'f_daily_atardecer',
-    label: 'Regalo Diario: Atardecer Pastel',
+    id: 'f_daily_1',
+    dayNumber: 1,
+    label: 'Día 1: Atardecer Pastel',
     value: 'linear-gradient(160deg,#FFE5D6,#F9D2E6 55%,#DCD3F7)',
-    eventName: 'Regalo Diario',
+    eventName: 'Regalo Diario (Día 1)',
   },
   {
-    id: 'f_daily_nube',
-    label: 'Regalo Diario: Nube Serena',
-    value: 'linear-gradient(160deg,#F2F8FF,#E3EEFB)',
-    eventName: 'Regalo Diario',
+    id: 'f_daily_2',
+    dayNumber: 2,
+    label: 'Día 2: Nube Serena',
+    value: 'linear-gradient(160deg,#E8F4FF,#D6E6FA 55%,#E9E2FC)',
+    eventName: 'Regalo Diario (Día 2)',
   },
   {
-    id: 'f_daily_durazno',
-    label: 'Regalo Diario: Brisa Durazno',
-    value: 'linear-gradient(160deg,#FFF1E3,#FFD9D2)',
-    eventName: 'Regalo Diario',
+    id: 'f_daily_3',
+    dayNumber: 3,
+    label: 'Día 3: Brisa Durazno',
+    value: 'linear-gradient(160deg,#FFF1E3,#FFD9D2 55%,#FCE1EE)',
+    eventName: 'Regalo Diario (Día 3)',
   },
   {
-    id: 'f_daily_helado',
-    label: 'Regalo Diario: Helado de Menta',
+    id: 'f_daily_4',
+    dayNumber: 4,
+    label: 'Día 4: Helado de Menta',
     value: 'linear-gradient(160deg,#FFE3F1,#E1F5EA 55%,#E3ECFF)',
-    eventName: 'Regalo Diario',
+    eventName: 'Regalo Diario (Día 4)',
   },
   {
-    id: 'f_daily_bosque',
-    label: 'Regalo Diario: Bosque Mágico',
-    value: 'linear-gradient(160deg,#E7F6E8,#D8EEE9)',
-    eventName: 'Regalo Diario',
+    id: 'f_daily_5',
+    dayNumber: 5,
+    label: 'Día 5: Bosque Mágico',
+    value: 'linear-gradient(160deg,#E7F6E8,#D4EFE7 55%,#DCE9FA)',
+    eventName: 'Regalo Diario (Día 5)',
   },
   {
-    id: 'f_daily_oceano',
-    label: 'Regalo Diario: Océano Calmo',
-    value: 'linear-gradient(160deg,#DFF1FB,#D8DDF8)',
-    eventName: 'Regalo Diario',
+    id: 'f_daily_6',
+    dayNumber: 6,
+    label: 'Día 6: Océano Calmo',
+    value: 'linear-gradient(160deg,#DFF1FB,#D8DDF8 55%,#F2DFF7)',
+    eventName: 'Regalo Diario (Día 6)',
   },
   {
-    id: 'f_daily_amigos',
-    label: 'Regalo Diario: Dúo Tierno',
+    id: 'f_daily_7',
+    dayNumber: 7,
+    label: 'Día 7: Dúo Tierno',
     value: 'url("/assets/aistudio/cute_matching_pfp_8c77ca0d.jpg") center/cover fixed no-repeat',
     image: '/assets/aistudio/cute_matching_pfp_8c77ca0d.jpg',
-    eventName: 'Regalo Diario',
+    eventName: 'Regalo Diario (Día 7)',
   },
   {
-    id: 'f_daily_cachorros',
-    label: 'Regalo Diario: Siesta de Cachorros',
+    id: 'f_daily_8',
+    dayNumber: 8,
+    label: 'Día 8: Siesta de Cachorros',
     value: 'url("/assets/aistudio/840765824214721840_793d3719.jpg") center/cover fixed no-repeat',
     image: '/assets/aistudio/840765824214721840_793d3719.jpg',
-    eventName: 'Regalo Diario',
+    eventName: 'Regalo Diario (Día 8)',
   },
   {
-    id: 'f_daily_zorrito',
-    label: 'Regalo Diario: Bosque de Otoño',
+    id: 'f_daily_9',
+    dayNumber: 9,
+    label: 'Día 9: Bosque de Otoño',
     value: 'url("/assets/aistudio/I_think_I_did_a_good_job_ef67d4be.jpg") center/cover fixed no-repeat',
     image: '/assets/aistudio/I_think_I_did_a_good_job_ef67d4be.jpg',
-    eventName: 'Regalo Diario',
+    eventName: 'Regalo Diario (Día 9)',
   },
   {
-    id: 'f_daily_jirafa',
-    label: 'Regalo Diario: Jirafita Rosa',
+    id: 'f_daily_10',
+    dayNumber: 10,
+    label: 'Día 10: Jirafita Rosa',
     value: 'url("/assets/aistudio/935763628825987852_d7bbc829.jpg") center/cover fixed no-repeat',
     image: '/assets/aistudio/935763628825987852_d7bbc829.jpg',
-    eventName: 'Regalo Diario',
+    eventName: 'Regalo Diario (Día 10)',
   },
 ];
 
+/**
+ * 4. Nuevos Síntomas Físicos (Selección Múltiple) conectados a la predicción y estimación:
+ */
 export const SYMPTOM_OPTIONS: SymptomOption[] = [
   {
-    id: 'Panza revuelta o gases',
-    label: 'Panza revuelta o gases',
+    id: 'Dolor de cabeza',
+    label: 'Dolor de cabeza',
+    category: 'Cuerpo',
+    icon: '🤕',
+    weight: 0.6,
+  },
+  {
+    id: 'Dolor de panza',
+    label: 'Dolor de panza',
     category: 'Digestión',
-    icon: '🫧',
+    icon: '🤢',
+    weight: 0.95,
+  },
+  {
+    id: 'Sensibilidad',
+    label: 'Sensibilidad',
+    category: 'Cuerpo',
+    icon: '🥺',
     weight: 0.85,
   },
   {
-    id: 'Dormí mal',
-    label: 'Dormí mal',
+    id: 'Cansancio',
+    label: 'Cansancio',
     category: 'Sueño',
-    icon: '🥱',
-    weight: 0.75,
+    icon: '😴',
+    weight: 0.65,
   },
   {
-    id: 'Dolor en la espalda baja o calambres',
-    label: 'Dolor en la espalda baja o calambres',
-    category: 'Cuerpo',
-    icon: '⚡',
-    weight: 1.0,
-  },
-  {
-    id: 'Sofocos / mucho calor',
-    label: 'Sofocos / mucho calor',
-    category: 'Temperatura',
-    icon: '🌡️',
-    weight: 0.75,
-  },
-  {
-    id: 'Antojos fuertes',
-    label: 'Antojos fuertes',
-    category: 'Apetito',
-    icon: '🍫',
-    weight: 0.8,
+    id: 'Granitos',
+    label: 'Granitos',
+    category: 'Piel',
+    icon: '🔴',
+    weight: 0.55,
   },
   {
     id: 'Cólicos',
     label: 'Cólicos',
     category: 'Cuerpo',
     icon: '😣',
-    weight: 1.1,
+    weight: 1.15,
   },
   {
     id: 'Mamas sensibles',
@@ -332,55 +439,87 @@ export const SYMPTOM_OPTIONS: SymptomOption[] = [
     weight: 0.8,
   },
   {
-    id: 'Cansancio',
-    label: 'Cansancio',
-    category: 'Sueño',
-    icon: '😴',
-    weight: 0.55,
-  },
-  {
-    id: 'Dolor de cabeza',
-    label: 'Dolor de cabeza',
+    id: 'Dolor en la espalda baja o calambres',
+    label: 'Dolor en la espalda baja o calambres',
     category: 'Cuerpo',
-    icon: '🤕',
-    weight: 0.45,
+    icon: '⚡',
+    weight: 1.0,
   },
   {
-    id: 'Granitos',
-    label: 'Granitos',
-    category: 'Piel',
-    icon: '🔴',
-    weight: 0.5,
+    id: 'Panza revuelta o gases',
+    label: 'Panza revuelta o gases',
+    category: 'Digestión',
+    icon: '🫧',
+    weight: 0.85,
+  },
+  {
+    id: 'Dormí mal',
+    label: 'Dormí mal',
+    category: 'Sueño',
+    icon: '🥱',
+    weight: 0.75,
+  },
+  {
+    id: 'Sofocos / mucho calor',
+    label: 'Sofocos / mucho calor',
+    category: 'Temperatura',
+    icon: '🌡️',
+    weight: 0.75,
+  },
+  {
+    id: 'Antojos fuertes',
+    label: 'Antojos fuertes',
+    category: 'Apetito',
+    icon: '🍫',
+    weight: 0.8,
+  },
+  {
+    id: 'Náuseas',
+    label: 'Náuseas',
+    category: 'Digestión',
+    icon: '🍵',
+    weight: 0.7,
+  },
+  {
+    id: 'Mareos',
+    label: 'Mareos',
+    category: 'Cuerpo',
+    icon: '💫',
+    weight: 0.65,
   },
   {
     id: 'Sudor u olor',
     label: 'Sudor u olor',
     category: 'Temperatura',
     icon: '💦',
-    weight: 0.35,
+    weight: 0.4,
   },
 ];
 
 export const SIGNAL_WEIGHTS: Record<string, number> = {
+  'Dolor de cabeza': 0.6,
+  'Dolor de panza': 0.95,
+  Sensibilidad: 0.85,
+  Cansancio: 0.65,
+  Granitos: 0.55,
+  Cólicos: 1.15,
+  'Mamas sensibles': 1.0,
+  Hinchazón: 0.8,
+  'Dolor en la espalda baja o calambres': 1.0,
   'Panza revuelta o gases': 0.85,
   'Dormí mal': 0.75,
-  'Dolor en la espalda baja o calambres': 1.0,
   'Sofocos / mucho calor': 0.75,
   'Antojos fuertes': 0.8,
-  'Cólicos': 1.1,
-  'Dolor de cabeza': 0.45,
-  'Cansancio': 0.55,
-  'Hinchazón': 0.8,
-  'Mamas sensibles': 1.0,
-  'Granitos': 0.5,
+  Náuseas: 0.7,
+  Mareos: 0.65,
+  'Sudor u olor': 0.4,
   'Dolor de espalda': 0.85,
-  'Antojos': 0.7,
-  'Sudor u olor': 0.35,
+  Antojos: 0.7,
   'f:blanco': 1.2,
   'f:claro': 1.2,
   'f:manchas': 3.0,
   'f:cafe': 3.0,
-  'm': 0.35,
+  m: 0.35,
 };
 
 export const EDUCATIONAL_TIPS: Record<string, EducationalTip> = {
@@ -406,37 +545,61 @@ export const EDUCATIONAL_TIPS: Record<string, EducationalTip> = {
     key: 'periodo',
     title: '🌸 Estás en tus días',
     category: 'Tu ciclo',
-    body: 'Cambia tu toalla cada 4 a 6 horas, toma agua y descansa si tu cuerpo te lo pide. Un periodo normal dura entre 2 y 7 días.',
+    body: 'Cambia tu toalla cada 4 a 6 horas y descansa si tu cuerpo te lo pide. Un periodo normal dura entre 2 y 7 días.',
+  },
+  'Dolor de panza': {
+    key: 'Dolor de panza',
+    title: '🤢 Cuerpo y digestión: ¿Por qué duele la panza?',
+    category: 'Hormonas y abdomen',
+    body: 'Las prostaglandinas que preparan al útero también pueden causar sensibilidad o retortijones suaves en el abdomen. Aplicarte calor tibio y descansar ayuda a relajar la zona.',
+  },
+  Sensibilidad: {
+    key: 'Sensibilidad',
+    title: '🥺 ¿Por qué noto más sensibilidad física o emocional?',
+    category: 'Hormonas y sensibilidad',
+    body: 'Antes del periodo, los cambios de estrógeno y progesterona hacen que tanto tus receptores físicos como tus emociones estén más perceptivos. Trátate con mucha paciencia y suavidad.',
+  },
+  Náuseas: {
+    key: 'Náuseas',
+    title: '🍵 ¿Por qué puedo sentir náuseas leves?',
+    category: 'Hormonas y digestión',
+    body: 'Las prostaglandinas pueden llegar por el torrente sanguíneo y hacer que el estómago se sienta más sensible unos días antes o al empezar el periodo. Comer porciones pequeñas y suaves ayuda mucho.',
+  },
+  Mareos: {
+    key: 'Mareos',
+    title: '💫 ¿Por qué siento ligeros mareos?',
+    category: 'Bienestar y energía',
+    body: 'Los cambios hormonales pueden relajar levemente los vasos sanguíneos o pedir más hidratación y energía. Levántate despacio de la cama y come a tus horas; si son frecuentes, avisa a un adulto.',
   },
   'Panza revuelta o gases': {
     key: 'Panza revuelta o gases',
     title: '🫧 Digestión: ¿Por qué siento la panza revuelta o gases?',
     category: 'Hormonas y digestión',
-    body: 'Antes o durante el periodo, tu cuerpo produce prostaglandinas y cambia el nivel de progesterona. Estas hormonas ayudan a que el útero trabaje, pero como el intestino está justo al lado, también hacen que la digestión vaya más lenta o más rápida. Es totalmente normal: tomar agüita tibia y comer sin prisa ayuda mucho.',
+    body: 'Antes o durante el periodo, tu cuerpo produce prostaglandinas y cambia el nivel de progesterona. Estas hormonas ayudan a que el útero trabaje, pero como el intestino está justo al lado, también hacen que la digestión vaya más lenta o más rápida.',
   },
   'Dormí mal': {
     key: 'Dormí mal',
     title: '🥱 Sueño: ¿Por qué me costó dormir bien?',
     category: 'Hormonas y descanso',
-    body: 'Las hormonas como el estrógeno y la progesterona suben y bajan para preparar tu ciclo, y eso influye en la melatonina (la hormona del sueño) y en la temperatura de tu cuerpo por la noche. Por eso puedes dar más vueltas en la cama. Bajar el brillo de las pantallas y hacer 3 respiraciones lentas te ayudará a descansar.',
+    body: 'Las hormonas como el estrógeno y la progesterona suben y bajan para preparar tu ciclo, y eso influye en la melatonina (la hormona del sueño) y en la temperatura de tu cuerpo por la noche.',
   },
   'Dolor en la espalda baja o calambres': {
     key: 'Dolor en la espalda baja o calambres',
     title: '⚡ Cuerpo: ¿Por qué duele la espalda baja o dan calambres?',
     category: 'Hormonas y músculos',
-    body: 'Las prostaglandinas hacen que el útero practique pequeñas contracciones suaves. Como los nervios y músculos de la pelvis están conectados con la espalda baja, esa sensación se refleja ahí como calambres o pesadez. Poner una bolsita tibia o estirar despacio la espalda relaja la zona.',
+    body: 'Las prostaglandinas hacen que el útero practique pequeñas contracciones suaves. Como los nervios y músculos de la pelvis están conectados con la espalda baja, esa sensación se refleja ahí como calambres o pesadez.',
   },
   'Sofocos / mucho calor': {
     key: 'Sofocos / mucho calor',
     title: '🌡️ Temperatura: ¿Por qué siento sofocos o mucho calor?',
     category: 'Hormonas y temperatura',
-    body: 'Cuando la progesterona y el estrógeno cambian de nivel, el "termostato" natural de tu cerebro (el hipotálamo) se vuelve más sensible y sube un poquito tu temperatura corporal. Sentir olas de calor es una respuesta normal de tu cuerpo: usa ropa fresca en capas y bebe agua fresca.',
+    body: 'Cuando la progesterona y el estrógeno cambian de nivel, el "termostato" natural de tu cerebro (el hipotálamo) se vuelve más sensible y sube un poquito tu temperatura corporal.',
   },
   'Antojos fuertes': {
     key: 'Antojos fuertes',
     title: '🍫 Apetito: ¿Por qué tengo antojos fuertes?',
     category: 'Hormonas y energía',
-    body: 'En los días previos al periodo tu cuerpo gasta un poco más de energía y puede bajar levemente la serotonina (la sustancia que da calma y buen humor). Por eso tu cerebro pide carbohidratos o algo dulce para recargar energía rápido. Disfruta un gustito con calma y combínalo con fruta y agua.',
+    body: 'En los días previos al periodo tu cuerpo gasta un poco más de energía y puede bajar levemente la serotonina. Por eso tu cerebro pide carbohidratos o algo dulce para recargar energía rápido.',
   },
   Cólicos: {
     key: 'Cólicos',
@@ -466,7 +629,7 @@ export const EDUCATIONAL_TIPS: Record<string, EducationalTip> = {
     key: 'Hinchazón',
     title: '🎈 Hinchazón abdominal',
     category: 'Hormonas y líquidos',
-    body: 'Los cambios de progesterona hacen que el cuerpo guarde un poquito más de agua unos días. Caminar, tomar agua y comer menos sal ayuda a que baje sola.',
+    body: 'Los cambios de progesterona hacen que el cuerpo guarde un poquito más de líquido unos días. Caminar y comer con menos sal ayuda a que baje sola.',
   },
   Granitos: {
     key: 'Granitos',
@@ -484,7 +647,7 @@ export const EDUCATIONAL_TIPS: Record<string, EducationalTip> = {
     key: 'Dolor de cabeza',
     title: '🤕 Dolor de cabeza',
     category: 'Bienestar',
-    body: 'Las variaciones de estrógeno, junto con dormir poco o tomar poca agua, pueden dar dolor de cabeza. Hidrátate y descansa la vista de las pantallas.',
+    body: 'Las variaciones de estrógeno o dormir poco pueden dar dolor de cabeza. Descansa la vista de las pantallas y relájate en un lugar tranquilo.',
   },
   'Dolor de espalda': {
     key: 'Dolor de espalda',
@@ -508,7 +671,7 @@ export const EDUCATIONAL_TIPS: Record<string, EducationalTip> = {
     key: 'emo',
     title: '💜 Tus emociones y las hormonas',
     category: 'Bienestar emocional',
-    body: 'Las hormonas se comunican con las zonas del cerebro que regulan el ánimo, por eso puedes sentirte sensible, enojada o triste de repente. Respira lento (inhala 4 segundos, suelta 6) y recuerda que es pasajero.',
+    body: 'Las hormonas se comunican con las zonas del cerebro que regulan el ánimo, por eso puedes sentir varias emociones a la vez. Respira lento y recuerda que es pasajero.',
   },
 };
 
@@ -517,12 +680,16 @@ export const TIP_PRIORITY: string[] = [
   'f:manchas',
   'f:cafe',
   'periodo',
+  'Cólicos',
+  'Dolor de panza',
+  'Sensibilidad',
   'Panza revuelta o gases',
   'Dormí mal',
   'Dolor en la espalda baja o calambres',
   'Sofocos / mucho calor',
   'Antojos fuertes',
-  'Cólicos',
+  'Náuseas',
+  'Mareos',
   'f:blanco',
   'f:claro',
   'Mamas sensibles',
@@ -536,20 +703,24 @@ export const TIP_PRIORITY: string[] = [
   'emo',
 ];
 
+/**
+ * 2. Bloqueo estricto de sorpresas:
+ * daysBefore = 0 y daysAfter = 0 para que ningún evento pueda verse ni reclamarse antes de la fecha exacta.
+ */
 export const HOLIDAYS: HolidayEvent[] = [
   {
     id: 'aniversario',
-    name: 'Gran Aniversario de la App (8 y 9 Nov)',
+    name: 'Gran Aniversario de PerDay (8 Nov)',
     emoji: '👑',
     month: 11,
     day: 8,
     daysBefore: 0,
-    daysAfter: 1, // Incluye regla de tolerancia: 8 de noviembre y 9 de noviembre
+    daysAfter: 0,
     isGrandAnniversary: true,
-    maxRewards: 4, // Límite exacto de 4 recompensas para el Aniversario
-    title: '¡Feliz Gran Aniversario de la App! 👑🎉',
+    maxRewards: 4,
+    title: '¡Feliz Gran Aniversario de PerDay! 👑🎉',
     message:
-      '¡Celebramos el Gran Aniversario de Estimar Menarca (8 de noviembre, con tolerancia especial el 9 de noviembre)! Recibes exactamente 4 recompensas exclusivas de colección: 2 fondos especiales y 2 insignias de aniversario.',
+      '¡Celebramos el Gran Aniversario de PerDay el 8 de noviembre! Recibes 4 recompensas exclusivas de colección: 2 fondos especiales y 2 insignias de aniversario.',
     frameId: 'f_aniversario',
     wallpapers: [
       {
@@ -591,12 +762,12 @@ export const HOLIDAYS: HolidayEvent[] = [
     emoji: '🎄',
     month: 12,
     day: 25,
-    daysBefore: 2,
-    daysAfter: 1,
-    maxRewards: 3, // Límite estricto de máximo 3 recompensas en eventos normales
+    daysBefore: 0,
+    daysAfter: 0,
+    maxRewards: 3,
     title: '¡Feliz Navidad! 🎄🎅',
     message:
-      'Que estos días estén llenos de paz, abrazos calentitos y momentos lindos. Te regalamos 3 recompensas navideñas (2 fondos invernales y 1 insignia especial).',
+      'Que este día esté lleno de paz, abrazos calentitos y momentos lindos. Te regalamos 3 recompensas navideñas (2 fondos invernales y 1 insignia especial).',
     frameId: 'f_navidad',
     wallpapers: [
       {
@@ -631,8 +802,8 @@ export const HOLIDAYS: HolidayEvent[] = [
     emoji: '🎃',
     month: 10,
     day: 31,
-    daysBefore: 2,
-    daysAfter: 1,
+    daysBefore: 0,
+    daysAfter: 0,
     maxRewards: 3,
     title: '¡Feliz Halloween! 🎃👻',
     message:
@@ -671,8 +842,8 @@ export const HOLIDAYS: HolidayEvent[] = [
     emoji: '💝',
     month: 2,
     day: 14,
-    daysBefore: 1,
-    daysAfter: 1,
+    daysBefore: 0,
+    daysAfter: 0,
     maxRewards: 3,
     title: '¡Feliz San Valentín! 💝🌸',
     message:
@@ -713,8 +884,8 @@ export const HOLIDAYS: HolidayEvent[] = [
     day: 21,
     altMonth: 9,
     altDay: 21,
-    daysBefore: 2,
-    daysAfter: 2,
+    daysBefore: 0,
+    daysAfter: 0,
     maxRewards: 3,
     title: '¡Bienvenida la Primavera! 🌼🦋',
     message:
@@ -750,21 +921,25 @@ export const HOLIDAYS: HolidayEvent[] = [
 ];
 
 /**
- * Regla de Aniversario (8 de Noviembre) + Regla de Tolerancia (9 de Noviembre):
- * Si la usuaria entra o se registra el 8 de noviembre o un día después (9 de noviembre),
- * recibe las 4 recompensas especiales del Aniversario.
+ * Verifica si hoy es el día exacto del Aniversario de PerDay (8 de Noviembre).
  */
 export function isAppAnniversary(now: Date = new Date()): boolean {
   const m = now.getMonth() + 1;
   const d = now.getDate();
-  return m === 11 && (d === 8 || d === 9);
+  return m === 11 && d === 8;
 }
 
 /**
- * Devuelve la lista de recompensas de un evento aplicando el límite estricto:
- * - Eventos normales: máximo 3 recompensas.
- * - Aniversario de la App (8-9 Nov): exactamente 4 recompensas.
+ * Verifica si un cumpleaños u otro evento está en su fecha exacta para desbloquear su sorpresa.
  */
+export function isBirthdayUnlockedToday(
+  bday: { d: number; m: number } | null,
+  now: Date = new Date()
+): boolean {
+  if (!bday) return false;
+  return now.getMonth() + 1 === bday.m && now.getDate() === bday.d;
+}
+
 export function getHolidayRewards(h: HolidayEvent): HolidayRewardItem[] {
   const limit = h.isGrandAnniversary ? 4 : Math.min(3, h.maxRewards || 3);
   const items: HolidayRewardItem[] = [];
@@ -795,7 +970,8 @@ export function getHolidayRewards(h: HolidayEvent): HolidayRewardItem[] {
 }
 
 /**
- * Regalo Diario: Regala un fondo de pantalla nuevo cada día que la usuaria abre la aplicación.
+ * 2. 10 Fondos Diarios por entrada diaria consecutiva:
+ * Regala uno de los 10 fondos nuevos cada día que la usuaria entra a la aplicación seguido.
  */
 export function claimDailyWallpaperGift(
   todayIso: string,
@@ -803,37 +979,78 @@ export function claimDailyWallpaperGift(
 ): {
   wallpaper: WallpaperAsset;
   isNewToday: boolean;
+  streakCount: number;
+  totalUnlocked: number;
   updatedClaims: Record<string, string>;
 } {
+  const computeStreak = (claims: Record<string, string>, refIso: string): number => {
+    let streak = 0;
+    const cursor = new Date(refIso + 'T12:00');
+    while (streak < 365) {
+      const key = new Date(cursor.getTime() - cursor.getTimezoneOffset() * 6e4)
+        .toISOString()
+        .slice(0, 10);
+      if (claims[key]) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return Math.max(1, streak);
+  };
+
   if (claimedByDate[todayIso]) {
     const existing =
       DAILY_WALLPAPERS.find((w) => w.id === claimedByDate[todayIso]) || DAILY_WALLPAPERS[0];
+    const streakCount = computeStreak(claimedByDate, todayIso);
+    const uniqueUnlocked = new Set(Object.values(claimedByDate)).size;
     return {
       wallpaper: existing,
       isNewToday: false,
+      streakCount,
+      totalUnlocked: Math.min(DAILY_WALLPAPERS.length, uniqueUnlocked),
       updatedClaims: claimedByDate,
     };
   }
 
+  // Check if yesterday was claimed to determine consecutive streak index (1..10)
+  const prevDate = new Date(todayIso + 'T12:00');
+  prevDate.setDate(prevDate.getDate() - 1);
+  const yesterdayIso = new Date(prevDate.getTime() - prevDate.getTimezoneOffset() * 6e4)
+    .toISOString()
+    .slice(0, 10);
+
+  const prevStreak = claimedByDate[yesterdayIso] ? computeStreak(claimedByDate, yesterdayIso) : 0;
+  const newStreak = prevStreak + 1;
   const alreadyClaimedIds = new Set(Object.values(claimedByDate));
+
+  // Prefer the wallpaper matching the streak day (1..10), or the next uncollected wallpaper among the 10
+  const streakIdx = (newStreak - 1) % DAILY_WALLPAPERS.length;
+  const candidateByStreak = DAILY_WALLPAPERS[streakIdx];
   const nextWallpaper =
-    DAILY_WALLPAPERS.find((w) => !alreadyClaimedIds.has(w.id)) ||
-    DAILY_WALLPAPERS[Object.keys(claimedByDate).length % DAILY_WALLPAPERS.length];
+    !alreadyClaimedIds.has(candidateByStreak.id)
+      ? candidateByStreak
+      : DAILY_WALLPAPERS.find((w) => !alreadyClaimedIds.has(w.id)) || candidateByStreak;
 
   const updatedClaims = {
     ...claimedByDate,
     [todayIso]: nextWallpaper.id,
   };
 
+  const uniqueUnlocked = new Set(Object.values(updatedClaims)).size;
+
   return {
     wallpaper: nextWallpaper,
     isNewToday: true,
+    streakCount: newStreak,
+    totalUnlocked: Math.min(DAILY_WALLPAPERS.length, uniqueUnlocked),
     updatedClaims,
   };
 }
 
 /**
- * Genera el contenido JSON descargable con el historial de registros diarios (síntomas, ánimo, peso, agua, flujo).
+ * Genera el contenido JSON descargable con el historial de registros diarios de PerDay.
  */
 export function buildHistoryExportJson(params: {
   entries: DayEntry[];
@@ -842,50 +1059,44 @@ export function buildHistoryExportJson(params: {
   exportedAtIso: string;
 }): string {
   const payload = {
-    app: 'Estimar menarca',
-    version: 2,
+    app: 'PerDay',
+    version: 3,
     exportedAt: params.exportedAtIso,
     usuario: params.profileNick || 'Usuaria',
-    mascotaActiva: params.petId || VIRTUAL_PETS[0].id,
+    mascotaDecorativa: params.petId || VIRTUAL_PETS[0].id,
     totalRegistros: params.entries.length,
     historialDiario: params.entries.map((e) => ({
       fecha: e.d,
-      animoIndice: e.m ?? null,
+      animosIndices: Array.isArray(e.moods) ? e.moods : e.m != null ? [e.m] : [],
+      animoIndice: e.m ?? (Array.isArray(e.moods) && e.moods.length ? e.moods[0] : null),
       periodo: e.periodo || 'no',
       intensidad: e.intensidad || null,
       flujo: e.flujo || 'ninguno',
       sintomas: e.dolor || [],
       pesoKg: e.peso ?? null,
-      vasosAgua: e.agua ?? 0,
       nota: e.nota || '',
     })),
   };
   return JSON.stringify(payload, null, 2);
 }
 
+/**
+ * 2. Bloqueo de sorpresas:
+ * Solo devuelve el año activo cuando la fecha actual coincide EXACTAMENTE con el día y mes del evento.
+ */
 export function getActiveYearForHoliday(h: HolidayEvent, now: Date = new Date()): number | null {
-  if (h.isGrandAnniversary) {
-    return isAppAnniversary(now) ? now.getFullYear() : null;
+  const m = now.getMonth() + 1;
+  const d = now.getDate();
+  if (m === h.month && d === h.day) {
+    return now.getFullYear();
   }
-  const t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
-  const datesToCheck: Array<[number, number]> = [[h.month, h.day]];
-  if (h.altMonth && h.altDay) {
-    datesToCheck.push([h.altMonth, h.altDay]);
-  }
-  for (const yr of [now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1]) {
-    for (const [m, d] of datesToCheck) {
-      const target = new Date(yr, m - 1, d, 12);
-      const diff = Math.round((target.getTime() - t.getTime()) / 864e5);
-      if (diff >= -h.daysAfter && diff <= h.daysBefore) {
-        return yr;
-      }
-    }
+  if (h.altMonth && h.altDay && m === h.altMonth && d === h.altDay) {
+    return now.getFullYear();
   }
   return null;
 }
 
 export function detectActiveHoliday(now: Date = new Date()): { holiday: HolidayEvent; year: number } | null {
-  // Prioritize the Grand Anniversary on November 8 and tolerance day November 9
   const anniv = HOLIDAYS.find((h) => h.isGrandAnniversary);
   if (anniv && isAppAnniversary(now)) {
     return { holiday: anniv, year: now.getFullYear() };
@@ -921,6 +1132,7 @@ export function extractTipKeys(formState: {
   flujo?: string;
   dolor?: string[];
   moodName?: string | null;
+  moodNames?: string[];
 }): string[] {
   const keys: string[] = [...(formState.dolor || [])];
   if (formState.flujo && formState.flujo !== 'ninguno') {
@@ -930,9 +1142,13 @@ export function extractTipKeys(formState: {
     keys.push('periodo');
     if (formState.inten === 'fuerte') keys.push('fuerte');
   }
-  if (formState.moodName) {
-    if (formState.moodName === 'Cansada') keys.push('Cansancio');
-    else if (['Triste', 'Enojada', 'Nerviosa', 'Confundida', 'Sensible'].includes(formState.moodName)) {
+  const allMoods = [
+    ...(formState.moodNames || []),
+    ...(formState.moodName ? [formState.moodName] : []),
+  ];
+  for (const mn of allMoods) {
+    if (mn === 'Cansada') keys.push('Cansancio');
+    else if (['Triste', 'Enojada', 'Nerviosa', 'Confundida', 'Sensible'].includes(mn)) {
       keys.push('emo');
     }
   }
@@ -947,6 +1163,16 @@ export function obtenerTipsEducativos(keys: string[], max = 6): EducationalTip[]
     return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
   });
   return unique.slice(0, max).map((k) => EDUCATIONAL_TIPS[k]);
+}
+
+export function getEntryMoodIndices(e: DayEntry): number[] {
+  if (Array.isArray(e.moods) && e.moods.length > 0) {
+    return e.moods;
+  }
+  if (e.m != null) {
+    return [e.m];
+  }
+  return [];
 }
 
 export function calcularPuntajeSintomas(
@@ -969,13 +1195,16 @@ export function calcularPuntajeSintomas(
 
     const ks: string[] = [...(e.dolor || [])];
     if (e.flujo && e.flujo !== 'ninguno') ks.push('f:' + e.flujo);
-    if (e.m != null && moodValues[e.m] != null && moodValues[e.m] <= 3) ks.push('m');
+    const moodIdxs = getEntryMoodIndices(e);
+    if (moodIdxs.some((idx) => moodValues[idx] != null && moodValues[idx] <= 3)) {
+      ks.push('m');
+    }
 
     ks.forEach((k) => {
       seen[k] = seen[k] || 0;
       if (seen[k] < 3) {
         seen[k]++;
-        const weight = SIGNAL_WEIGHTS[k] ?? 0.45;
+        const weight = SIGNAL_WEIGHTS[k] ?? 0.5;
         score += weight * (ago <= 7 ? 1 : 0.65);
         count++;
         if (!k.startsWith('f:') && k !== 'm') {
@@ -986,6 +1215,75 @@ export function calcularPuntajeSintomas(
   });
 
   return { score, count, matchedSymptoms: [...matchedSet] };
+}
+
+/**
+ * 4. Fórmula de predicción (Estimar) mejorada:
+ * Combina las respuestas del cuestionario de desarrollo con la nueva variedad de síntomas físicos
+ * y estados de ánimo registrados en el calendario para calcular con mayor precisión cuándo llegará el periodo.
+ */
+export function calcularEstimacionMenarca(
+  d: Record<string, string>,
+  history: DayEntry[] = [],
+  todayIso: string = new Date().toISOString().slice(0, 10)
+): {
+  etapa: number;
+  wMin: number;
+  wMax: number;
+  flujo: boolean;
+  rango: string;
+  symptomScore: number;
+  symptomCountUsed: number;
+  matchedSymptoms: string[];
+} {
+  const pts: Record<string, number> = { si: 2, nose: 1, no: 0 };
+  const sn: Record<string, number> = { si: 1, nose: 0.5, no: 0 };
+  const vello =
+    ({ ninguno: 0, axilas: 1, publica: 2, ambas: 2, nose: 0.5 } as Record<string, number>)[d.vello] ?? 0;
+  const crece =
+    ({ mas7: 2, m4a7: 1.5, menos4: 0, nose: 0.5 } as Record<string, number>)[d.crece] ?? 0;
+  const fam =
+    ({ menor11: 1, '11a12': 0, mas13: -1, nose: 0 } as Record<string, number>)[d.familia] ?? 0;
+
+  // Integrar síntomas físicos registrados en los últimos 30 días
+  const sg = calcularPuntajeSintomas(history, todayIso, 30);
+  const symptomBoost = Math.min(2.2, sg.score * 0.35);
+
+  const s = (pts[d.mamas] ?? 0) + vello + crece + (sn[d.piel] ?? 0) + (sn[d.forma] ?? 0) + symptomBoost;
+  const ageM = (+d.edad || 12) * 12 + (+d.meses || 0);
+  let c = Math.max(3, 36 - s * 4.8 - fam * 4);
+  c = Math.round(0.75 * c + 0.25 * Math.max(3, 150 - ageM));
+
+  let wMin = Math.max(0, c - 6);
+  let wMax = c + 6;
+  let etapa = s >= 5 ? 2 : s >= 2.5 ? 1 : 0;
+
+  if (d.flujo === 'si' || sg.score >= 3.5) {
+    etapa = 2;
+    wMin = 0;
+    const cap = d.flujo === 'si' && sg.score >= 2.5 ? 6 : sg.score >= 3.5 ? Math.max(6, c + 2) : 12;
+    wMax = Math.min(wMax, cap);
+  }
+
+  wMax = Math.min(wMax, Math.max(6, 192 - ageM));
+  wMin = Math.min(wMin, Math.max(0, wMax - 6));
+
+  const rangoTxt = (a: number, b: number) => {
+    if (b <= 24) return `entre ${Math.round(a)} y ${Math.round(b)} meses`;
+    const f = (x: number) => (Math.round(x / 6) / 2).toString().replace('.', ',');
+    return `entre ${f(a)} y ${f(b)} años`;
+  };
+
+  return {
+    etapa,
+    wMin,
+    wMax,
+    flujo: d.flujo === 'si',
+    rango: rangoTxt(wMin, wMax),
+    symptomScore: sg.score,
+    symptomCountUsed: sg.count,
+    matchedSymptoms: sg.matchedSymptoms,
+  };
 }
 
 export function calcularPronostico(
@@ -1014,7 +1312,6 @@ export function calcularPronostico(
     };
   }
 
-  // Find period start dates
   const periodDays = new Set(
     history
       .filter((x) => x.periodo === 'si')
@@ -1062,7 +1359,7 @@ export function calcularPronostico(
       const a = new Date(last);
       a.setDate(a.getDate() + 21);
       const b = new Date(last);
-      b.setDate(b.getDate() + 45);
+      b.setDate(last.getDate() + 45);
       lo = dd(a);
       hi = dd(b);
       base = 'el tiempo desde tu última menstruación (entre 21 y 45 días)';

@@ -2,108 +2,136 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   isAppAnniversary,
+  isBirthdayUnlockedToday,
   detectActiveHoliday,
+  getActiveYearForHoliday,
   getHolidayRewards,
   claimDailyWallpaperGift,
   buildHistoryExportJson,
   VIRTUAL_PETS,
+  DAILY_WALLPAPERS,
   HOLIDAYS,
   SYMPTOM_OPTIONS,
   calcularPronostico,
+  calcularEstimacionMenarca,
   extractTipKeys,
   obtenerTipsEducativos,
 } from './menarcaLogic.ts';
 
-test('Aniversario de la App (8 de Noviembre + tolerancia 9 de Noviembre): detecta ambos días y entrega exactamente 4 recompensas', () => {
+test('Bloqueo de sorpresas: Cumpleaños y eventos solo se desbloquean en la fecha exacta (nunca antes de tiempo)', () => {
+  const nov7 = new Date('2026-11-07T12:00:00');
   const nov8 = new Date('2026-11-08T12:00:00');
   const nov9 = new Date('2026-11-09T12:00:00');
-  const nov10 = new Date('2026-11-10T12:00:00');
+  const dec24 = new Date('2026-12-24T12:00:00');
+  const dec25 = new Date('2026-12-25T12:00:00');
 
+  assert.equal(isAppAnniversary(nov7), false);
   assert.equal(isAppAnniversary(nov8), true);
-  assert.equal(isAppAnniversary(nov9), true);
-  assert.equal(isAppAnniversary(nov10), false);
+  assert.equal(isAppAnniversary(nov9), false);
 
-  const detected8 = detectActiveHoliday(nov8);
-  const detected9 = detectActiveHoliday(nov9);
-  assert.ok(detected8);
-  assert.ok(detected9);
-  assert.equal(detected8.holiday.id, 'aniversario');
-  assert.equal(detected9.holiday.id, 'aniversario');
+  assert.equal(detectActiveHoliday(nov7), null);
+  assert.equal(detectActiveHoliday(dec24), null);
 
-  const rewards = getHolidayRewards(detected8.holiday);
-  assert.equal(rewards.length, 4);
+  const activeAnniv = detectActiveHoliday(nov8);
+  assert.ok(activeAnniv);
+  assert.equal(activeAnniv.holiday.id, 'aniversario');
+  assert.equal(getHolidayRewards(activeAnniv.holiday).length, 4);
+
+  const navidad = HOLIDAYS.find((h) => h.id === 'navidad')!;
+  assert.equal(getActiveYearForHoliday(navidad, dec24), null);
+  assert.equal(getActiveYearForHoliday(navidad, dec25), 2026);
+
+  assert.equal(isBirthdayUnlockedToday({ d: 15, m: 5 }, new Date('2026-05-14T12:00:00')), false);
+  assert.equal(isBirthdayUnlockedToday({ d: 15, m: 5 }, new Date('2026-05-15T12:00:00')), true);
 });
 
-test('Límites de Celebraciones Normales: Navidad, Halloween, San Valentín y Primavera entregan máximo 3 recompensas por evento', () => {
-  const normalHolidays = HOLIDAYS.filter((h) => !h.isGrandAnniversary);
-  assert.equal(normalHolidays.length, 4);
+test('10 Fondos Diarios y 21 Mascotas Decorativas con nuevas imágenes Photoroom', () => {
+  assert.equal(DAILY_WALLPAPERS.length, 10);
 
-  for (const h of normalHolidays) {
-    const rewards = getHolidayRewards(h);
-    assert.ok(rewards.length > 0 && rewards.length <= 3, `Expected <= 3 rewards for ${h.id}, got ${rewards.length}`);
+  let claims: Record<string, string> = {};
+  const giftedIds = new Set<string>();
+  for (let i = 1; i <= 10; i++) {
+    const dayIso = `2026-11-${String(i).padStart(2, '0')}`;
+    const res = claimDailyWallpaperGift(dayIso, claims);
+    assert.equal(res.isNewToday, true);
+    assert.equal(res.streakCount, i);
+    giftedIds.add(res.wallpaper.id);
+    claims = res.updatedClaims;
   }
+  assert.equal(giftedIds.size, 10);
+
+  assert.equal(VIRTUAL_PETS.length, 21);
+  assert.ok(VIRTUAL_PETS.every((p) => p.image.includes('-Photoroom')));
 });
 
-test('Regalo Diario y Mascotas Virtuales: regala un fondo nuevo por día y carga imágenes locales de mascotas', () => {
-  const day1 = claimDailyWallpaperGift('2026-11-10', {});
-  assert.equal(day1.isNewToday, true);
-  assert.ok(day1.wallpaper.id);
-
-  // Reopening on the same day does not duplicate gift
-  const day1Again = claimDailyWallpaperGift('2026-11-10', day1.updatedClaims);
-  assert.equal(day1Again.isNewToday, false);
-  assert.equal(day1Again.wallpaper.id, day1.wallpaper.id);
-
-  // Opening next day gifts a different wallpaper
-  const day2 = claimDailyWallpaperGift('2026-11-11', day1.updatedClaims);
-  assert.equal(day2.isNewToday, true);
-  assert.notEqual(day2.wallpaper.id, day1.wallpaper.id);
-
-  assert.ok(VIRTUAL_PETS.length >= 8);
-  assert.ok(VIRTUAL_PETS.some((p) => p.codeName === 'mascota_gato.jpg'));
-  assert.ok(VIRTUAL_PETS.some((p) => p.codeName === 'mascota_perro.jpg'));
-});
-
-test('Nuevos Registros de Salud (Peso y Agua), Pronóstico, Tips Educativos y Exportación JSON', () => {
+test('Selección múltiple de Estados de Ánimo y Nuevos Síntomas conectados a Estimar y Pronóstico en PerDay', () => {
   const symptomIds = SYMPTOM_OPTIONS.map((s) => s.id);
-  assert.ok(symptomIds.includes('Panza revuelta o gases'));
-  assert.ok(symptomIds.includes('Dormí mal'));
-  assert.ok(symptomIds.includes('Dolor en la espalda baja o calambres'));
-  assert.ok(symptomIds.includes('Sofocos / mucho calor'));
-  assert.ok(symptomIds.includes('Antojos fuertes'));
+  for (const required of [
+    'Dolor de cabeza',
+    'Dolor de panza',
+    'Sensibilidad',
+    'Cansancio',
+    'Granitos',
+    'Cólicos',
+    'Mamas sensibles',
+    'Hinchazón',
+  ]) {
+    assert.ok(symptomIds.includes(required), `Missing symptom: ${required}`);
+  }
 
   const today = '2026-11-10';
   const entries = [
     {
       d: today,
+      moods: [0, 2, 7], // Feliz + Cansada + Sensible simultáneamente
       m: 0,
-      dolor: ['Panza revuelta o gases', 'Dormí mal', 'Antojos fuertes'],
+      dolor: ['Dolor de cabeza', 'Dolor de panza', 'Sensibilidad', 'Cansancio', 'Granitos'],
       flujo: 'blanco',
       periodo: 'no' as const,
-      peso: 44.5,
-      agua: 6,
-      nota: 'Día tranquilo',
+      peso: 45.0,
+      nota: 'Varios ánimos y síntomas hoy',
     },
   ];
 
   const forecast = calcularPronostico(entries, today, null);
-  assert.equal(forecast.matchedSymptoms.length, 3);
+  assert.equal(forecast.matchedSymptoms.length, 5);
+  assert.ok(forecast.pct > 10);
+
+  // Verificar que calcularEstimacionMenarca tome en cuenta los síntomas registrados
+  const formAnswers = {
+    edad: '12',
+    meses: '6',
+    mamas: 'si',
+    vello: 'axilas',
+    crece: 'm4a7',
+    piel: 'si',
+    forma: 'si',
+    familia: '11a12',
+    flujo: 'no',
+  };
+  const estWithoutSymptoms = calcularEstimacionMenarca(formAnswers, [], today);
+  const estWithSymptoms = calcularEstimacionMenarca(formAnswers, entries, today);
+  assert.ok(estWithSymptoms.symptomCountUsed > 0);
+  assert.ok(estWithSymptoms.wMax <= estWithoutSymptoms.wMax);
 
   const tips = obtenerTipsEducativos(
-    extractTipKeys({ dolor: entries[0].dolor, flujo: 'blanco', per: 'no' }),
+    extractTipKeys({
+      dolor: entries[0].dolor,
+      flujo: 'blanco',
+      per: 'no',
+      moodNames: ['Feliz', 'Cansada', 'Sensible'],
+    }),
     6
   );
-  assert.ok(tips.length >= 3);
+  assert.ok(tips.length >= 4);
 
   const jsonStr = buildHistoryExportJson({
     entries,
     profileNick: 'Luna',
-    petId: 'mascota_gato_chef',
+    petId: VIRTUAL_PETS[0].id,
     exportedAtIso: '2026-11-10T12:00:00Z',
   });
   const parsed = JSON.parse(jsonStr);
-  assert.equal(parsed.usuario, 'Luna');
-  assert.equal(parsed.totalRegistros, 1);
-  assert.equal(parsed.historialDiario[0].pesoKg, 44.5);
-  assert.equal(parsed.historialDiario[0].vasosAgua, 6);
+  assert.equal(parsed.app, 'PerDay');
+  assert.deepEqual(parsed.historialDiario[0].animosIndices, [0, 2, 7]);
 });

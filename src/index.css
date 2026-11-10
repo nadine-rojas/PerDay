@@ -2203,13 +2203,14 @@ input[type=email], input[type=password] {
   border: 2.5px solid var(--accent);
   box-shadow: var(--shadow);
   flex: none;
-  background: var(--bg);
+  background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.92), var(--bg));
+  padding: 6px;
 }
 
 .pet-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
@@ -2294,7 +2295,7 @@ input[type=email], input[type=password] {
 
 .pet-opt {
   flex: none;
-  width: 78px;
+  width: 82px;
   padding: 6px;
   border-radius: 16px;
   border: 1.5px solid var(--line);
@@ -2312,10 +2313,12 @@ input[type=email], input[type=password] {
 }
 
 .pet-opt img {
-  width: 54px;
-  height: 54px;
+  width: 56px;
+  height: 56px;
   border-radius: 12px;
-  object-fit: cover;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.65);
+  padding: 2px;
 }
 
 .pet-opt.on {
@@ -2324,84 +2327,23 @@ input[type=email], input[type=password] {
   box-shadow: inset 0 0 0 1.5px var(--accent);
 }
 
-/* Nuevos Registros de Salud Diario: Peso y Medidor de Agua */
-.health-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  margin: 4px 0 20px;
-  padding: 16px;
-  border-radius: 18px;
-  background: var(--bg);
-  border: 1px solid var(--line);
+/* Estados bloqueados de sorpresas y botones deshabilitados */
+.btn:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+  transform: none;
 }
 
-@media (min-width: 640px) {
-  .health-grid {
-    grid-template-columns: 220px 1fr;
-    align-items: start;
-  }
+.fest.locked-fest {
+  opacity: 0.86;
 }
 
-.water-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.water-Quick-btns {
-  display: flex;
-  gap: 8px;
-}
-
-.water-Quick-btns .rbtn {
-  width: 36px;
-  height: 36px;
-  font-size: 20px;
-}
-
-.water-cups-grid {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 6px;
-}
-
-@media (max-width: 480px) {
-  .water-cups-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.water-cup {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  min-height: 54px;
-  padding: 6px 4px;
-  border-radius: 14px;
-  border: 1.5px solid var(--line);
+/* Etiquetas de estado de ánimo de selección múltiple */
+.mood.mood-tag.on {
+  border-color: var(--accent);
   background: var(--card);
-  color: var(--muted);
-  font: inherit;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-
-.water-cup .cup-ic {
-  font-size: 20px;
-  line-height: 1;
-}
-
-.water-cup.filled {
-  border-color: #6FA8D6;
-  background: linear-gradient(160deg, rgba(200, 235, 221, 0.35), rgba(195, 220, 243, 0.55));
-  color: var(--text);
+  box-shadow: inset 0 0 0 2px var(--accent);
+  transform: translateY(-1px);
 }
 
 /* Regalo Diario strip */
@@ -2428,3 +2370,4 @@ input[type=email], input[type=password] {
     gap: 6px;
   }
 }
+

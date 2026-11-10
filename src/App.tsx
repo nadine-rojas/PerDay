@@ -11,6 +11,7 @@ import {
   DayEntry,
   MenarcaEstimate,
   isAppAnniversary,
+  isBirthdayUnlockedToday,
   getHolidayRewards,
   claimDailyWallpaperGift,
   buildHistoryExportJson,
@@ -19,6 +20,8 @@ import {
   daysUntilHoliday,
   extractTipKeys,
   obtenerTipsEducativos,
+  getEntryMoodIndices,
+  calcularEstimacionMenarca,
   calcularPronostico,
 } from './utils/menarcaLogic';
 
@@ -37,9 +40,6 @@ interface StoredGift {
 
 interface PetState {
   id: string;
-  customName: string;
-  affection: number;
-  lastActionMsg: string;
 }
 
 interface CloudAccountInfo {
@@ -396,8 +396,7 @@ export default function App() {
     ];
 
     /* ---------- Estado general ---------- */
-    let regMood: number | null = null;
-    let regAgua = 0;
+    let regMoods: number[] = [];
     let calMonth = new Date();
     let selDay = iso(new Date());
 
@@ -425,15 +424,13 @@ export default function App() {
     let dailyClaims = store.get<Record<string, string>>('menarca_daily_wallpapers', {});
     let todayDailyWpId = '';
 
-    let petState: PetState = Object.assign(
-      {
-        id: VIRTUAL_PETS[0].id,
-        customName: '',
-        affection: 80,
-        lastActionMsg: '',
-      },
-      store.get<Partial<PetState>>('menarca_mascota', {})
-    );
+    const storedPet = store.get<Partial<PetState>>('menarca_mascota', {});
+    const validPetId = VIRTUAL_PETS.some((p) => p.id === storedPet.id)
+      ? storedPet.id!
+      : VIRTUAL_PETS[0].id;
+    let petState: PetState = {
+      id: validPetId,
+    };
 
     const saveProf = () => {
       store.set('menarca_perfil', prof);
@@ -468,7 +465,6 @@ export default function App() {
         regalos,
         etapa: store.get<MenarcaEstimate | null>('menarca_etapa', null),
         bday,
-        rutinas: rut,
         mascota: petState,
         dailyClaims,
         foto,
@@ -500,12 +496,11 @@ export default function App() {
         bday = payload.bday;
         store.set('menarca_bday', bday);
       }
-      if (payload.rutinas && Array.isArray(payload.rutinas.items)) {
-        rut = payload.rutinas;
-        store.set('menarca_rutinas', rut);
-      }
       if (payload.mascota && typeof payload.mascota === 'object') {
         petState = Object.assign(petState, payload.mascota);
+        if (!VIRTUAL_PETS.some((p) => p.id === petState.id)) {
+          petState.id = VIRTUAL_PETS[0].id;
+        }
         store.set('menarca_mascota', petState);
       }
       if (payload.dailyClaims && typeof payload.dailyClaims === 'object') {
@@ -592,54 +587,38 @@ export default function App() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `historial-menarca-${iso(new Date())}.json`;
+      a.download = `perday-historial-${iso(new Date())}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1500);
-      showTip('📥 Se descargó tu copia de seguridad en formato JSON.');
+      showTip('📥 Se descargó tu copia de seguridad de PerDay en formato JSON.');
     }
 
-    /* ---------- 2. Mascotas Virtuales en el Inicio ---------- */
+    /* ---------- 3. Mascotas Decorativas en el Inicio (21 nuevas imágenes) ---------- */
     function renderPetSection() {
       const host = $('#pet-section-host');
       if (!host) return;
       const currentPet = VIRTUAL_PETS.find((p) => p.id === petState.id) || VIRTUAL_PETS[0];
-      const displayName = petState.customName.trim() || currentPet.defaultName;
-      const todayEntry = entryOf(iso(new Date()));
-      const glassesToday = todayEntry.agua ?? rcount('agua', iso(new Date()));
-      const statusMsg =
-        petState.lastActionMsg ||
-        (glassesToday >= 6
-          ? `¡Qué bien! Ya tomaste ${glassesToday} vasos de agua hoy 💧🐾`
-          : currentPet.greeting);
 
-      host.innerHTML = `<div class="pet-showcase">
-        <div class="pet-main">
+      host.innerHTML = `<div class="pet-showcase decorative-only">
+        <div class="pet-main decorative">
           <div class="pet-avatar-wrap">
-            <img src="${currentPet.image}" alt="${esc(displayName)} (${currentPet.species})" class="pet-img" referrerpolicy="no-referrer"/>
-            <span class="pet-species-tag">${currentPet.emoji} ${currentPet.species}</span>
+            <img src="${currentPet.image}" alt="${esc(currentPet.defaultName)}" class="pet-img" referrerpolicy="no-referrer"/>
           </div>
           <div class="pet-info">
             <div class="pet-title-row">
-              <h3>${esc(displayName)}</h3>
-              <span class="pet-heart-pill" title="Nivel de cariño">❤️ ${petState.affection}% Cariño</span>
+              <h3>${currentPet.emoji} ${esc(currentPet.defaultName)}</h3>
+              <span class="pet-species-tag">Mascota decorativa · ${currentPet.species}</span>
             </div>
-            <div class="pet-bubble">
-              <p>${esc(statusMsg)}</p>
-            </div>
-            <div class="pet-actions">
-              <button class="btn" type="button" id="btn-pet-cuddle">🐾 Acariciar</button>
-              <button class="btn ghost" type="button" id="btn-pet-feed">🍓 Dar premio</button>
-              <input type="text" id="pet-custom-name" maxlength="18" value="${esc(petState.customName)}" placeholder="Cambiar nombre (${esc(currentPet.defaultName)})" aria-label="Nombre de tu mascota" class="pet-name-input"/>
-            </div>
+            <p class="muted" style="margin:4px 0 0;font-size:14px">${esc(currentPet.caption)}</p>
           </div>
         </div>
         <div class="pet-picker-wrap">
-          <p class="muted" style="margin:0 0 8px;font-size:13px;font-weight:600">Elige tu compañero/a en Inicio:</p>
+          <p class="muted" style="margin:0 0 8px;font-size:13px;font-weight:600">Elige tu mascota decorativa para adornar el Inicio (${VIRTUAL_PETS.length} disponibles):</p>
           <div class="pet-picker" id="pet-picker">
             ${VIRTUAL_PETS.map(
-              (p) => `<button type="button" class="pet-opt${p.id === currentPet.id ? ' on' : ''}" data-pet-id="${p.id}" aria-pressed="${p.id === currentPet.id}" title="${p.defaultName} (${p.codeName})">
+              (p) => `<button type="button" class="pet-opt${p.id === currentPet.id ? ' on' : ''}" data-pet-id="${p.id}" aria-pressed="${p.id === currentPet.id}" title="${p.defaultName}">
                 <img src="${p.image}" alt="${p.defaultName}" referrerpolicy="no-referrer"/>
                 <span>${p.defaultName}</span>
               </button>`
@@ -648,40 +627,12 @@ export default function App() {
         </div>
       </div>`;
 
-      const cuddleBtn = $('#btn-pet-cuddle');
-      if (cuddleBtn) {
-        cuddleBtn.onclick = () => {
-          petState.affection = Math.min(100, petState.affection + 5);
-          petState.lastActionMsg = `¡${displayName} ronronea y mueve la colita de felicidad! 💖✨`;
-          savePet();
-          renderPetSection();
-        };
-      }
-      const feedBtn = $('#btn-pet-feed');
-      if (feedBtn) {
-        feedBtn.onclick = () => {
-          petState.affection = Math.min(100, petState.affection + 8);
-          petState.lastActionMsg = `¡Ñam ñam! A ${displayName} le encantó su premio saludable 🍓🌟`;
-          savePet();
-          renderPetSection();
-        };
-      }
-      const nameInput = $<HTMLInputElement>('#pet-custom-name');
-      if (nameInput) {
-        nameInput.onchange = () => {
-          petState.customName = nameInput.value.trim().slice(0, 18);
-          petState.lastActionMsg = '';
-          savePet();
-          renderPetSection();
-        };
-      }
       const picker = $('#pet-picker');
       if (picker) {
         picker.onclick = (ev) => {
           const btn = (ev.target as HTMLElement).closest<HTMLElement>('[data-pet-id]');
           if (!btn) return;
           petState.id = btn.dataset.petId!;
-          petState.lastActionMsg = '';
           savePet();
           renderPetSection();
         };
@@ -733,26 +684,8 @@ export default function App() {
     }
 
     function estimar(d: Record<string, string>) {
-      const pts: Record<string, number> = { si: 2, nose: 1, no: 0 };
-      const sn: Record<string, number> = { si: 1, nose: 0.5, no: 0 };
-      const vello = ({ ninguno: 0, axilas: 1, publica: 2, ambas: 2, nose: 0.5 } as Record<string, number>)[d.vello] ?? 0;
-      const crece = ({ mas7: 2, m4a7: 1.5, menos4: 0, nose: 0.5 } as Record<string, number>)[d.crece] ?? 0;
-      const fam = ({ menor11: 1, '11a12': 0, mas13: -1, nose: 0 } as Record<string, number>)[d.familia] ?? 0;
-      const s = (pts[d.mamas] ?? 0) + vello + crece + (sn[d.piel] ?? 0) + (sn[d.forma] ?? 0);
-      const ageM = (+d.edad || 12) * 12 + (+d.meses || 0);
-      let c = Math.max(4, 36 - s * 5 - fam * 4);
-      c = Math.round(0.75 * c + 0.25 * Math.max(3, 150 - ageM));
-      let wMin = Math.max(0, c - 6);
-      let wMax = c + 6;
-      let etapa = s >= 5 ? 2 : s >= 2.5 ? 1 : 0;
-      if (d.flujo === 'si') {
-        etapa = 2;
-        wMin = 0;
-        wMax = 12;
-      }
-      wMax = Math.min(wMax, Math.max(6, 192 - ageM));
-      wMin = Math.min(wMin, Math.max(0, wMax - 6));
-      return { etapa, wMin, wMax, flujo: d.flujo === 'si', rango: rangoTxt(wMin, wMax) };
+      const history = store.get<DayEntry[]>('menarca_animo', []);
+      return calcularEstimacionMenarca(d, history, iso(new Date()));
     }
 
     function mapaSvg(r: { wMin: number; wMax: number }) {
@@ -782,17 +715,32 @@ export default function App() {
 </svg>`;
     }
 
-    function showResult(r: { etapa: number; wMin: number; wMax: number; flujo: boolean; rango: string }, edad: number) {
+    function showResult(
+      r: {
+        etapa: number;
+        wMin: number;
+        wMax: number;
+        flujo: boolean;
+        rango: string;
+        symptomCountUsed?: number;
+        matchedSymptoms?: string[];
+      },
+      edad: number
+    ) {
       const box = $('#resultado')!;
       const sent = r.flujo
         ? 'Es probable que tu primera menstruación ya haya empezado o esté muy cerca.'
         : `Es probable que tu primera menstruación llegue ${r.rango}.`;
+      const symNote =
+        r.matchedSymptoms && r.matchedSymptoms.length
+          ? `<p style="margin:6px 0 0;font-size:14px">✨ Se incluyeron tus síntomas físicos registrados (${r.matchedSymptoms.join(', ')}) para afinar esta predicción.</p>`
+          : `<p style="margin:6px 0 0;font-size:14px">💡 Registra tus síntomas físicos en el calendario para afinar aún más tu predicción.</p>`;
       box.innerHTML =
         (r.flujo
           ? '<div class="card warn"><p style="margin:0">Probablemente ya estás cerca o ya empezó tu primera menstruación. Conviene hablar con un adulto de confianza, como tu mamá, tu papá o una maestra.</p></div>'
           : '') +
-        `<div class="res"><p>Tu estimación</p><p class="est">${sent}</p><p>${fechasTxt(r.wMin, r.wMax)}</p><p>Cada cuerpo tiene su propio ritmo. No existe una fecha "correcta" para que llegue.</p></div>` +
-        `<div class="card"><h2>Tu mapa</h2>${mapaSvg(r)}<p class="muted" style="margin:6px 0 0;font-size:14px">La zona rosa muestra cuándo podría llegar según tus respuestas. Si algo cambia, vuelve a responder.</p></div>` +
+        `<div class="res"><p>Tu estimación en PerDay</p><p class="est">${sent}</p><p>${fechasTxt(r.wMin, r.wMax)}</p>${symNote}<p>Cada cuerpo tiene su propio ritmo. No existe una fecha "correcta" para que llegue.</p></div>` +
+        `<div class="card"><h2>Tu mapa</h2>${mapaSvg(r)}<p class="muted" style="margin:6px 0 0;font-size:14px">La zona rosa muestra cuándo podría llegar según tus respuestas y tus síntomas registrados.</p></div>` +
         `<div class="card"><h2>Etapa de la pubertad</h2><div class="stages">${[0, 1, 2].map((i) => `<div class="stage${i <= r.etapa ? ' on' : ''}"></div>`).join('')}</div><div class="stage-lbl">${STAGES.map((s, i) => `<span class="${i === r.etapa ? 'on' : ''}">${s}</span>`).join('')}</div><p class="muted" style="margin:0">${STAGE_TXT[r.etapa]}</p></div>` +
         (edad >= 15 && !r.flujo
           ? '<div class="card"><p style="margin:0">Si ya tienes 15 años o más y todavía no te ha llegado la menstruación, conviene comentarlo con tu pediatra.</p></div>'
@@ -809,22 +757,29 @@ export default function App() {
       window.scrollTo(0, 0);
     }
 
-    /* ---------- Inicio: hoy y Banner de Aniversario / Regalo Diario ---------- */
+    /* ---------- Inicio: hoy y Banner de Aniversario / Regalo Diario (10 Fondos) ---------- */
     function renderHoy() {
       const h = store.get<DayEntry[]>('menarca_animo', []);
       const todayKey = iso(new Date());
       const t = h.find((x) => x.d === todayKey);
-      $('#hoy-animo')!.textContent =
-        t && t.m != null && MOODS[t.m] ? MOODS[t.m].e + ' ' + MOODS[t.m].n : 'Aún sin registrar';
+      const moodIdxs = t ? getEntryMoodIndices(t) : [];
+      $('#hoy-animo')!.textContent = moodIdxs.length
+        ? moodIdxs
+            .filter((idx) => Boolean(MOODS[idx]))
+            .map((idx) => `${MOODS[idx].e} ${MOODS[idx].n}`)
+            .join(' · ')
+        : 'Aún sin registrar';
       const e = store.get<MenarcaEstimate | null>('menarca_etapa', null);
       $('#hoy-etapa')!.textContent = e ? 'Etapa: ' + STAGES[e.etapa] : 'Haz una estimación';
 
-      // Resumen rápido de Peso y Agua de hoy
       const healthEl = $('#hoy-salud');
       if (healthEl) {
-        const glasses = t?.agua ?? rcount('agua', todayKey);
-        const pesoTxt = t?.peso ? `⚖️ ${t.peso} kg` : '⚖️ Peso sin anotar';
-        healthEl.textContent = `💧 ${glasses}/8 vasos · ${pesoTxt}`;
+        const symsCount = t?.dolor?.length || 0;
+        const symTxt = symsCount
+          ? `🩺 ${symsCount} ${symsCount === 1 ? 'síntoma registrado' : 'síntomas registrados'}`
+          : '🩺 Sin síntomas hoy';
+        const pesoTxt = t?.peso ? ` · ⚖️ ${t.peso} kg` : '';
+        healthEl.textContent = `${symTxt}${pesoTxt}`;
       }
 
       const bi = bdayInfo();
@@ -833,17 +788,17 @@ export default function App() {
         bl.hidden = false;
         bl.textContent =
           bi.diff === 0
-            ? '🎂 ¡Hoy es tu cumpleaños!'
-            : `🎂 Faltan ${bi.diff} ${bi.diff === 1 ? 'día' : 'días'} para tu cumple`;
+            ? '🎂 ¡Hoy es tu cumpleaños! Tu sorpresa está desbloqueada'
+            : `🎂 Faltan ${bi.diff} ${bi.diff === 1 ? 'día' : 'días'} para tu cumple (sorpresa bloqueada hasta ese día)`;
       } else {
         bl.hidden = true;
       }
 
-      // Renderizar el Banner del Gran Evento (Aniversario 8-9 de Noviembre) o festividad activa + Regalo Diario
       const bannerHost = $('#aniv-banner-host');
       if (bannerHost) {
         const active = detectActiveHoliday(new Date());
         const dailyWp = DAILY_WALLPAPERS.find((w) => w.id === todayDailyWpId) || dailyGiftInfo.wallpaper;
+        const streakDay = ((dailyGiftInfo.streakCount - 1) % 10) + 1;
         let html = '';
 
         if (active) {
@@ -871,14 +826,14 @@ export default function App() {
           </div>`;
         }
 
-        // Tarjeta de Regalo Diario desbloqueado hoy
+        // Tarjeta de Regalo Diario: 1 de 10 fondos nuevos por cada día seguido
         html += `<div class="card span3 daily-gift-strip" style="margin-bottom:16px">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
             <div style="display:flex;align-items:center;gap:12px">
               <span class="daily-gift-icon" aria-hidden="true">🎁</span>
               <div>
-                <b style="font-size:15px">Regalo Diario de hoy desbloqueado: ${esc(dailyWp.label)}</b>
-                <p class="muted" style="margin:2px 0 0;font-size:13px">Cada día que abres la app recibes un fondo de pantalla nuevo exclusivo.</p>
+                <b style="font-size:15px">Regalo Diario (${streakDay}/10 días seguidos): ${esc(dailyWp.label)}</b>
+                <p class="muted" style="margin:2px 0 0;font-size:13px">Entra cada día seguido a PerDay para coleccionar los 10 fondos diarios exclusivos (${dailyGiftInfo.totalUnlocked}/10 desbloqueados).</p>
               </div>
             </div>
             <button class="btn ghost" type="button" id="btn-use-daily-wp">Usar fondo de hoy ✨</button>
@@ -918,9 +873,15 @@ export default function App() {
         const i = document.createElement('i');
         const s = document.createElement('span');
         s.textContent = DIAS[d.getDay()];
-        if (e && e.m != null && MOODS[e.m]) {
-          em.textContent = MOODS[e.m].e;
-          i.style.height = MOODS[e.m].v * 14 + 'px';
+        const moodIdxs = e ? getEntryMoodIndices(e) : [];
+        if (moodIdxs.length > 0 && MOODS[moodIdxs[0]]) {
+          em.textContent = moodIdxs
+            .slice(0, 2)
+            .map((idx) => MOODS[idx]?.e || '')
+            .join('');
+          const avgV =
+            moodIdxs.reduce((acc, idx) => acc + (MOODS[idx]?.v || 3), 0) / moodIdxs.length;
+          i.style.height = Math.round(avgV * 14) + 'px';
         } else {
           i.style.height = '6px';
           i.style.opacity = '.35';
@@ -928,7 +889,7 @@ export default function App() {
         bar.append(em, i, s);
         box.appendChild(bar);
       }
-      $('#hist-vacio')!.hidden = h.some((x) => x.m != null);
+      $('#hist-vacio')!.hidden = h.some((x) => getEntryMoodIndices(x).length > 0);
     }
 
     /* ---------- Perfil, Fondos e Insignias ---------- */
@@ -1112,7 +1073,6 @@ export default function App() {
       applyBg();
       renderBday();
       renderFest();
-      renderRutinas();
       renderAccountStatus();
     }
 
@@ -1377,6 +1337,7 @@ export default function App() {
         ['vello', '🌿 Vello'],
         ['crece', '📏 Estirón'],
         ['flujo', '💧 Flujo'],
+        ['sintomas', '✨ Síntomas'],
         ['x', '🌷 Primera menstruación'],
       ];
       const cuando =
@@ -1455,9 +1416,11 @@ export default function App() {
         const e = hist.find((x) => x.d === key) || ({} as DayEntry);
         const pred = pa && pb && key >= pa && key <= pb && e.periodo !== 'si';
         const hasSy = (e.dolor || []).length > 0;
-        const isAnivDay = m + 1 === 11 && (d === 8 || d === 9);
+        const isAnivDay = m + 1 === 11 && d === 8;
         const isBdayDay = bday && bday.d === d && bday.m === m + 1;
-        html += `<button class="day${key === today ? ' today' : ''}${key === selDay ? ' sel' : ''}${pred ? ' pred' : ''}" type="button" data-d="${key}" aria-label="${fmtDay(key)}${e.periodo === 'si' ? ', con menstruación' : ''}${pred ? ', posible próxima menstruación' : ''}${isAnivDay ? ', Aniversario de la app' : ''}">${isBdayDay ? '<span class="bd" aria-hidden="true">🎂</span>' : isAnivDay ? '<span class="bd" aria-hidden="true">👑</span>' : ''}${d}${e.m != null && MOODS[e.m] ? `<em aria-hidden="true">${MOODS[e.m].e}</em>` : ''}${e.periodo === 'si' ? `<span class="per ${e.intensidad || 'normal'}"></span>` : ''}${e.flujo && e.flujo !== 'ninguno' ? '<span class="fl"></span>' : ''}${hasSy ? '<span class="sy"></span>' : ''}</button>`;
+        const moodIdxs = getEntryMoodIndices(e);
+        const moodEm = moodIdxs.length && MOODS[moodIdxs[0]] ? MOODS[moodIdxs[0]].e : '';
+        html += `<button class="day${key === today ? ' today' : ''}${key === selDay ? ' sel' : ''}${pred ? ' pred' : ''}" type="button" data-d="${key}" aria-label="${fmtDay(key)}${e.periodo === 'si' ? ', con menstruación' : ''}${pred ? ', posible próxima menstruación' : ''}${isAnivDay ? ', Aniversario de PerDay' : ''}">${isBdayDay ? '<span class="bd" aria-hidden="true">🎂</span>' : isAnivDay ? '<span class="bd" aria-hidden="true">👑</span>' : ''}${d}${moodEm ? `<em aria-hidden="true">${moodEm}</em>` : ''}${e.periodo === 'si' ? `<span class="per ${e.intensidad || 'normal'}"></span>` : ''}${e.flujo && e.flujo !== 'ninguno' ? '<span class="fl"></span>' : ''}${hasSy ? '<span class="sy"></span>' : ''}</button>`;
       }
       $('#cal')!.innerHTML = html;
     }
@@ -1467,59 +1430,6 @@ export default function App() {
       $('#int-box')!.hidden = !p || p.value !== 'si';
     }
 
-    /* ---------- 3. Medidor Visual e Interactivo de Agua ---------- */
-    function renderWaterMeter() {
-      const host = $('#reg-agua-meter');
-      if (!host) return;
-      const maxGlasses = 8;
-      const pct = Math.min(100, Math.round((regAgua / maxGlasses) * 100));
-      const cupsHtml = Array.from({ length: maxGlasses }, (_, idx) => {
-        const glassNum = idx + 1;
-        const filled = glassNum <= regAgua;
-        return `<button type="button" class="water-cup${filled ? ' filled' : ''}" data-glass="${glassNum}" aria-label="${glassNum} ${glassNum === 1 ? 'vaso' : 'vasos'} de agua" aria-pressed="${filled}">
-          <span class="cup-ic" aria-hidden="true">${filled ? '💧' : '🥛'}</span>
-          <small>${glassNum}</small>
-        </button>`;
-      }).join('');
-
-      host.innerHTML = `<div class="water-meter-box">
-        <div class="water-header">
-          <div>
-            <b id="water-count-lbl">${regAgua} de ${maxGlasses} vasos hoy</b>
-            <span class="muted" style="font-size:12.5px;margin-left:8px">${regAgua >= maxGlasses ? '¡Meta de hidratación cumplida! 🎉' : 'Toca un vaso para registrar'}</span>
-          </div>
-          <div class="water-Quick-btns">
-            <button type="button" class="rbtn minus" id="water-minus" aria-label="Restar un vaso de agua">−</button>
-            <button type="button" class="rbtn" id="water-plus" aria-label="Sumar un vaso de agua">+</button>
-          </div>
-        </div>
-        <div class="rbar" style="margin:8px 0 12px"><i style="--w:${pct}%"></i></div>
-        <div class="water-cups-grid">${cupsHtml}</div>
-      </div>`;
-
-      const minusBtn = $('#water-minus', host);
-      const plusBtn = $('#water-plus', host);
-      if (minusBtn) {
-        minusBtn.onclick = () => {
-          regAgua = Math.max(0, regAgua - 1);
-          renderWaterMeter();
-        };
-      }
-      if (plusBtn) {
-        plusBtn.onclick = () => {
-          regAgua = Math.min(20, regAgua + 1);
-          renderWaterMeter();
-        };
-      }
-      $$<HTMLButtonElement>('.water-cup', host).forEach((btn) => {
-        btn.onclick = () => {
-          const g = +btn.dataset.glass!;
-          regAgua = regAgua === g ? g - 1 : g;
-          renderWaterMeter();
-        };
-      });
-    }
-
     function renderDay() {
       const e = entryOf(selDay);
       $('#day-title')!.textContent = new Date(selDay + 'T12:00').toLocaleDateString('es', {
@@ -1527,8 +1437,7 @@ export default function App() {
         day: 'numeric',
         month: 'long',
       });
-      regMood = e.m ?? null;
-      regAgua = e.agua ?? rcount('agua', selDay);
+      regMoods = [...getEntryMoodIndices(e)];
 
       $('#reg-per')!.innerHTML = [
         ['no', 'No'],
@@ -1543,15 +1452,17 @@ export default function App() {
         ([v, l]) =>
           `<label><input type="radio" name="int" value="${v}"${(e.intensidad || 'normal') === v ? ' checked' : ''}><span>${l}</span></label>`
       ).join('');
-      $('#reg-moods')!.innerHTML = MOODS.map(
-        (m, i) =>
-          `<button class="mood${regMood === i ? ' on' : ''}" type="button" data-rm="${i}" aria-pressed="${regMood === i}"><b aria-hidden="true">${m.e}</b>${m.n}</button>`
-      ).join('');
 
-      // 4. Nuevos Síntomas con iconos amigables y categoría
+      // 4. Estados de ánimo con Selección Múltiple tipo etiquetas (tags)
+      $('#reg-moods')!.innerHTML = MOODS.map((m, i) => {
+        const isSel = regMoods.includes(i);
+        return `<button class="mood mood-tag${isSel ? ' on' : ''}" type="button" data-rm="${i}" aria-pressed="${isSel}"><b aria-hidden="true">${m.e}</b><span>${m.n}</span></button>`;
+      }).join('');
+
+      // 4. Nuevos Síntomas físicos con Selección Múltiple tipo etiquetas (tags)
       $('#reg-mol')!.innerHTML = SYMPTOM_OPTIONS.map(
         (sym) =>
-          `<label class="tile"><input type="checkbox" value="${sym.id}"${(e.dolor || []).includes(sym.id) ? ' checked' : ''}><span><small class="sym-cat">${sym.category}</small><b aria-hidden="true">${sym.icon}</b>${sym.label}</span></label>`
+          `<label class="tile sym-tag"><input type="checkbox" value="${sym.id}"${(e.dolor || []).includes(sym.id) ? ' checked' : ''}><span><small class="sym-cat">${sym.category}</small><b aria-hidden="true">${sym.icon}</b>${sym.label}</span></label>`
       ).join('');
 
       $('#reg-flu')!.innerHTML = FLU.map(
@@ -1559,12 +1470,10 @@ export default function App() {
           `<label class="tile"><input type="radio" name="flu" value="${v}"${(e.flujo || 'ninguno') === v ? ' checked' : ''}><span><b aria-hidden="true">${ic}</b>${l}</span></label>`
       ).join('');
 
-      // 3. Nuevos Registros de Salud Diario: Peso y Agua
       const pesoInp = $<HTMLInputElement>('#reg-peso');
       if (pesoInp) {
         pesoInp.value = e.peso != null ? String(e.peso) : '';
       }
-      renderWaterMeter();
 
       ($('#reg-nota') as HTMLTextAreaElement).value = e.nota || '';
       $('#reg-ok')!.hidden = true;
@@ -1587,9 +1496,9 @@ export default function App() {
             : null,
         flujo: $<HTMLInputElement>('#reg-flu input:checked')?.value || 'ninguno',
         dolor: $$<HTMLInputElement>('#reg-mol input:checked').map((i) => i.value),
-        m: regMood,
+        moods: [...regMoods],
+        m: regMoods.length > 0 ? regMoods[0] : null,
         peso: parsedPeso != null && !isNaN(parsedPeso) && parsedPeso > 0 ? Math.round(parsedPeso * 10) / 10 : null,
-        agua: regAgua,
       };
     }
 
@@ -1607,13 +1516,13 @@ export default function App() {
       const el = $('#day-tips');
       if (!el) return;
       const f = readForm();
-      const moodName = f.m != null && MOODS[f.m] ? MOODS[f.m].n : null;
+      const moodNames = f.moods.map((idx) => MOODS[idx]?.n).filter(Boolean) as string[];
       const keys = extractTipKeys({
         per: f.per,
         inten: f.inten,
         flujo: f.flujo,
         dolor: f.dolor,
-        moodName,
+        moodNames,
       });
       const h = formatTipsHtml(keys, 6);
       el.innerHTML = h
@@ -1628,14 +1537,16 @@ export default function App() {
       h.forEach((e) => {
         const ago = Math.round((now.getTime() - T12(e.d).getTime()) / 864e5);
         if (ago >= 0 && ago < 7) {
-          const moodName = e.m != null && MOODS[e.m] ? MOODS[e.m].n : null;
+          const moodNames = getEntryMoodIndices(e)
+            .map((idx) => MOODS[idx]?.n)
+            .filter(Boolean) as string[];
           ks = ks.concat(
             extractTipKeys({
               per: e.periodo,
               inten: e.intensidad,
               flujo: e.flujo,
               dolor: e.dolor,
-              moodName,
+              moodNames,
             })
           );
         }
@@ -1643,7 +1554,7 @@ export default function App() {
       const html = formatTipsHtml(uniq(ks), 5);
       $('#tips')!.innerHTML =
         html ||
-        '<p class="muted" style="margin:0">Cuando registres tus síntomas (como sueño, digestión, temperatura o antojos), aquí aparecerán tarjetas tranquilizadoras explicando cómo actúan tus hormonas.</p>';
+        '<p class="muted" style="margin:0">Cuando registres tus síntomas (como dolor de cabeza, dolor de panza, sensibilidad, cansancio, granitos, sueño o digestión), aquí aparecerán tarjetas explicando cómo actúan tus hormonas.</p>';
     }
 
     function renderPron() {
@@ -1677,7 +1588,7 @@ export default function App() {
 <p class="muted" style="margin:0 0 8px;font-size:14px">${base}</p>
 ${symText}
 ${r.hasData ? '' : '<button class="btn ghost" data-go="estimar" type="button" style="margin-bottom:10px">Hacer mi estimación</button>'}
-<details><summary>¿Cómo se calcula?</summary><p>Combino tu ventana probable con los síntomas diarios de los últimos 14 días: digestión (panza revuelta o gases), sueño (dormí mal), cuerpo (dolor en la espalda baja o calambres), temperatura (sofocos o mucho calor), apetito (antojos fuertes), flujo y estado de ánimo. Es una orientación educativa, no un método médico.</p></details>`;
+<details><summary>¿Cómo se calcula?</summary><p>Combino tu ventana probable con todos los síntomas físicos y estados de ánimo de selección múltiple de los últimos 14 días: dolor de cabeza, dolor de panza, sensibilidad, cansancio, granitos, cólicos, mamas sensibles, hinchazón, digestión, sueño, temperatura, apetito y flujo. Es una orientación educativa, no un método médico.</p></details>`;
     }
 
     function refreshAll(msg: string) {
@@ -1701,24 +1612,19 @@ ${r.hasData ? '' : '<button class="btn ghost" data-go="estimar" type="button" st
       const nota = ($('#reg-nota') as HTMLTextAreaElement).value.trim().slice(0, 200);
       const entry: DayEntry = {
         d: selDay,
-        m: regMood,
+        m: f.m,
+        moods: f.moods,
         dolor: f.dolor,
         flujo: f.flujo,
         nota,
         periodo: f.per,
         intensidad: f.inten,
         peso: f.peso,
-        agua: f.agua,
       };
       const k = h.findIndex((x) => x.d === selDay);
       if (k >= 0) h[k] = { ...h[k], ...entry };
       else h.push(entry);
       store.set('menarca_animo', h.slice(-400));
-
-      // Sincronizar también el contador de agua en rutinas para ese día
-      rut!.log[selDay] = rut!.log[selDay] || {};
-      rut!.log[selDay]['agua'] = f.agua;
-      saveRut();
 
       triggerCloudSync();
       refreshAll(
@@ -1748,210 +1654,17 @@ ${r.hasData ? '' : '<button class="btn ghost" data-go="estimar" type="button" st
       renderHistory();
       renderHoy();
       renderPetSection();
-      renderRutinas();
       renderAccountStatus();
     }
 
-    /* ---------- Rutinas y avisos ---------- */
     const esc = (t: string) =>
       String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
-    const RUT_PRE = [
-      { id: 'agua', n: 'Beber agua', e: '💧', goal: 8 },
-      { id: 'dientes', n: 'Lavarme los dientes', e: '🪥', goal: 2 },
-      { id: 'dormir', n: 'Dormir temprano', e: '😴', goal: 1 },
-      { id: 'mover', n: 'Moverme o estirarme', e: '🤸', goal: 1 },
-      { id: 'fruta', n: 'Comer fruta', e: '🍎', goal: 2 },
-      { id: 'leer', n: 'Leer un ratito', e: '📖', goal: 1 },
-    ];
-    const EVERY: Array<[number, string]> = [
-      [30, 'Cada 30 min'],
-      [60, 'Cada hora'],
-      [90, 'Cada 1 h 30'],
-      [120, 'Cada 2 horas'],
-      [180, 'Cada 3 horas'],
-    ];
-
-    interface RutItem {
-      id: string;
-      n: string;
-      e: string;
-      goal: number;
-      rem: boolean;
-      every: number;
-      from: string;
-      to: string;
-    }
-
-    let rut = store.get<{ items: RutItem[]; log: Record<string, Record<string, number>> } | null>(
-      'menarca_rutinas',
-      null
-    );
-    if (!rut || !Array.isArray(rut.items)) {
-      rut = {
-        items: [{ id: 'agua', n: 'Beber agua', e: '💧', goal: 8, rem: false, every: 90, from: '08:00', to: '20:00' }],
-        log: {},
-      };
-    }
-    rut.log = rut.log || {};
-    const remLast = store.get<Record<string, number>>('menarca_remlast', {});
-
-    const saveRut = () => {
-      const l: Record<string, Record<string, number>> = {};
-      Object.keys(rut!.log)
-        .sort()
-        .slice(-90)
-        .forEach((k) => (l[k] = rut!.log[k]));
-      rut!.log = l;
-      store.set('menarca_rutinas', rut);
-      triggerCloudSync();
-    };
-    const rcount = (id: string, d = iso(new Date())) => (rut!.log[d] || {})[id] || 0;
-    const runit = (it: RutItem) => (it.id === 'agua' ? 'vasos' : 'veces');
-
-    function rbump(id: string, n: number) {
-      const d = iso(new Date());
-      rut!.log[d] = rut!.log[d] || {};
-      const nextVal = Math.max(0, Math.min(99, rcount(id, d) + n));
-      rut!.log[d][id] = nextVal;
-      if (id === 'agua') {
-        const h = store.get<DayEntry[]>('menarca_animo', []);
-        const idx = h.findIndex((x) => x.d === d);
-        if (idx >= 0) h[idx].agua = nextVal;
-        else h.push({ d, agua: nextVal });
-        store.set('menarca_animo', h);
-        if (selDay === d) {
-          regAgua = nextVal;
-          renderWaterMeter();
-        }
-        renderHoy();
-        renderPetSection();
-      }
-      saveRut();
-      renderRutinas();
-    }
-
-    function rstreak(it: RutItem) {
-      let n = 0;
-      const d = new Date();
-      if (rcount(it.id, iso(d)) < it.goal) d.setDate(d.getDate() - 1);
-      while (n < 400 && rcount(it.id, iso(d)) >= it.goal) {
-        n++;
-        d.setDate(d.getDate() - 1);
-      }
-      return n;
-    }
-
-    const rpct = (it: RutItem) => Math.min(100, Math.round((rcount(it.id) / it.goal) * 100));
-
-    function rutCard(it: RutItem) {
-      const c = rcount(it.id);
-      const st = rstreak(it);
-      const cfg = it.rem
-        ? `<div class="rut-cfg"><label>Cada<select data-f="every">${EVERY.map(([v, l]) => `<option value="${v}"${v === it.every ? ' selected' : ''}>${l}</option>`).join('')}</select></label><label>Desde<input type="time" data-f="from" value="${it.from}"></label><label>Hasta<input type="time" data-f="to" value="${it.to}"></label></div>`
-        : '';
-      return `<div class="rut" data-id="${esc(it.id)}">
-<div class="rut-h"><span class="rut-e" aria-hidden="true">${it.e}</span><h3>${esc(it.n)}</h3><button class="btn ghost rdel" type="button" data-act="del" aria-label="Quitar ${esc(it.n)}"><svg class="i"><use href="#i-trash"/></svg></button></div>
-<div class="rut-p"><button class="rbtn minus" type="button" data-act="minus" aria-label="Restar uno a ${esc(it.n)}">−</button><div class="rut-m"><b>${c} de ${it.goal} ${runit(it)} hoy</b><div class="rbar"><i style="--w:${rpct(it)}%"></i></div></div><button class="rbtn" type="button" data-act="plus" aria-label="Sumar uno a ${esc(it.n)}">+</button></div>
-<p class="muted">${c >= it.goal ? '¡Meta de hoy cumplida! 🎉' : 'Meta diaria'}${st ? ` · 🔥 ${st} ${st === 1 ? 'día' : 'días'} seguidos` : ''}</p>
-<div class="rut-cfg"><label>Meta por día<input type="number" min="1" max="20" value="${it.goal}" data-f="goal"></label></div>
-<div class="switch-row" style="margin:12px 0 0"><p>Avisarme con una notificación</p><button class="sw" type="button" role="switch" data-act="rem" aria-checked="${!!it.rem}" aria-label="Avisarme: ${esc(it.n)}"></button></div>
-${cfg}</div>`;
-    }
-
-    function rutMini(it: RutItem) {
-      const c = rcount(it.id);
-      return `<div class="rmini" data-id="${esc(it.id)}"><span aria-hidden="true">${it.e}</span><div class="rut-m"><b>${esc(it.n)}<small>${c}/${it.goal}</small></b><div class="rbar"><i style="--w:${rpct(it)}%"></i></div></div><button class="rbtn" type="button" data-act="plus" aria-label="Sumar uno a ${esc(it.n)}">+</button></div>`;
-    }
-
-    function renderRutinas() {
-      const L = $('#rut-list');
-      if (L) L.innerHTML = rut!.items.map(rutCard).join('') || '<p class="muted">Todavía no tienes rutinas. Agrega una abajo.</p>';
-      const A = $('#rut-add');
-      if (A)
-        A.innerHTML = RUT_PRE.filter((p) => !rut!.items.some((x) => x.id === p.id))
-          .map((p) => `<button class="chip" type="button" data-add="${p.id}">+ ${p.e} ${p.n}</button>`)
-          .join('');
-      const H = $('#rut-hoy');
-      if (H)
-        H.innerHTML = rut!.items.length
-          ? rut!.items.map(rutMini).join('')
-          : '<p class="muted" style="margin:0 0 12px">Agrega rutinas en tu perfil.</p>';
-      renderNotif();
-    }
-
-    function rutClick(e: Event) {
-      const target = e.target as HTMLElement;
-      const b = target.closest<HTMLElement>('[data-act]');
-      if (!b) return;
-      const box = b.closest<HTMLElement>('[data-id]');
-      if (!box) return;
-      const it = rut!.items.find((x) => x.id === box.dataset.id);
-      if (!it) return;
-      const a = b.dataset.act;
-      if (a === 'plus') rbump(it.id, 1);
-      else if (a === 'minus') rbump(it.id, -1);
-      else if (a === 'rem') {
-        it.rem = !it.rem;
-        if (it.rem) {
-          remLast[it.id] = Date.now();
-          store.set('menarca_remlast', remLast);
-          if (notifState() === 'default') askNotif();
-        }
-        saveRut();
-        renderRutinas();
-      } else if (a === 'del') {
-        rut!.items = rut!.items.filter((x) => x !== it);
-        saveRut();
-        renderRutinas();
-      }
-    }
-
-    function rutChange(e: Event) {
-      const t = e.target as HTMLInputElement;
-      const f = t.dataset.f;
-      if (!f) return;
-      const box = t.closest<HTMLElement>('[data-id]');
-      if (!box) return;
-      const it = rut!.items.find((x) => x.id === box.dataset.id);
-      if (!it) return;
-      if (f === 'goal') it.goal = Math.max(1, Math.min(20, Math.round(+t.value) || 1));
-      else if (f === 'every') it.every = +t.value || 90;
-      else if ((f === 'from' || f === 'to') && t.value) it[f] = t.value;
-      saveRut();
-      renderRutinas();
-    }
-
-    const notifState = () => ('Notification' in window ? Notification.permission : 'unsupported');
-    function renderNotif() {
-      const st = notifState();
-      const msg: Record<string, string> = {
-        unsupported: 'Este navegador no permite avisos del sistema. Verás el recordatorio dentro de la página.',
-        granted: 'Avisos activados ✓ Llegan mientras esta página esté abierta.',
-        denied: 'Los avisos están bloqueados en el navegador.',
-        default: 'Activa los avisos para que el dispositivo te recuerde beber agua.',
-      };
-      const t = $('#notif-txt');
-      if (t) t.textContent = msg[st] || msg.default;
-      const b = $('#notif-on');
-      if (b) b.hidden = st === 'granted' || st === 'unsupported';
-    }
-
-    async function askNotif() {
-      if ('Notification' in window) {
-        try {
-          await Notification.requestPermission();
-        } catch {
-          // ignore
-        }
-      }
-      renderNotif();
-    }
 
     function notify(title: string, body: string, id: string) {
       let shown = false;
       if ('Notification' in window && Notification.permission === 'granted') {
         try {
-          const n = new Notification(title, { body, icon: ICON || undefined, tag: 'menarca-' + id });
+          const n = new Notification(title, { body, icon: ICON || undefined, tag: 'perday-' + id });
           n.onclick = () => {
             try {
               window.focus();
@@ -1968,29 +1681,8 @@ ${cfg}</div>`;
       if (!shown) showTip(title + ' ' + body);
     }
 
-    const hm = (t: string) => {
-      const [h, m] = (t || '0:0').split(':').map(Number);
-      return (h || 0) * 60 + (m || 0);
-    };
-
     function tick() {
       checkCelebs();
-      const now = new Date();
-      const mins = now.getHours() * 60 + now.getMinutes();
-      rut!.items.forEach((it) => {
-        if (!it.rem) return;
-        const a = hm(it.from);
-        const b = hm(it.to);
-        const inWin = a <= b ? mins >= a && mins <= b : mins >= a || mins <= b;
-        if (!inWin || rcount(it.id) >= it.goal) return;
-        if (Date.now() - (remLast[it.id] || 0) < it.every * 60000) return;
-        remLast[it.id] = Date.now();
-        store.set('menarca_remlast', remLast);
-        const c = rcount(it.id);
-        if (it.id === 'agua')
-          notify('💧 ¡Hora de beber agua!', `Llevas ${c} de ${it.goal} vasos hoy.`, it.id);
-        else notify(`${it.e} ${it.n}`, `Recordatorio. Llevas ${c} de ${it.goal} hoy.`, it.id);
-      });
     }
 
     /* ---------- Celebraciones y Gran Evento: Aniversario 8 y 9 de Noviembre ---------- */
@@ -2054,17 +1746,27 @@ ${cfg}</div>`;
       D.value = bday ? String(bday.d) : '';
       M.value = bday ? String(bday.m) : '';
       const i = bdayInfo();
+      const bdayUnlockedToday = isBirthdayUnlockedToday(bday, new Date());
       let t = 'Elige el día y el mes de tu cumpleaños.';
       if (i && bday) {
-        t =
-          i.diff === 0
-            ? '¡Hoy es tu cumpleaños! 🎉'
-            : i.diff < 0
-              ? `Tu cumpleaños fue hace ${-i.diff} ${i.diff === -1 ? 'día' : 'días'}.`
-              : `Tu cumpleaños es el ${bday.d} de ${MESES[bday.m - 1]}. Faltan ${i.diff} ${i.diff === 1 ? 'día' : 'días'} 🎈`;
+        t = bdayUnlockedToday
+          ? '🎂 ¡Hoy es tu cumpleaños! Tu regalo sorpresa está desbloqueado 🎉'
+          : i.diff < 0
+            ? `Tu cumpleaños fue hace ${-i.diff} ${i.diff === -1 ? 'día' : 'días'}. 🔒 La sorpresa se desbloquea únicamente el día exacto.`
+            : `Tu cumpleaños es el ${bday.d} de ${MESES[bday.m - 1]}. Faltan ${i.diff} ${i.diff === 1 ? 'día' : 'días'} · 🔒 Sorpresa bloqueada hasta ese día.`;
       }
       $('#bday-info')!.textContent = t;
       $('#bday-del')!.hidden = !bday;
+
+      const bdayBtn = $<HTMLButtonElement>('#bday-test');
+      if (bdayBtn) {
+        bdayBtn.disabled = !bdayUnlockedToday;
+        bdayBtn.textContent = bdayUnlockedToday
+          ? '🎁 Abrir mi sorpresa de cumpleaños'
+          : bday
+            ? `🔒 Bloqueado hasta el ${bday.d} de ${MESES[bday.m - 1]}`
+            : '🔒 Elige tu fecha (se desbloquea en tu día)';
+      }
 
       $('#regalos')!.innerHTML = regalos.length
         ? regalos
@@ -2099,7 +1801,7 @@ ${cfg}</div>`;
               return `<div class="gift"><span aria-hidden="true">${ins[0]}</span><div><b>Cumpleaños ${g.y}: ${ins[1]}</b><br><small>Marco ${(FR[g.marco] || FR.none).l} · Fondo ${(BG[g.fondo] || BG.lavanda).l}</small></div></div>`;
             })
             .join('')
-        : '<p class="muted" style="margin:0">Todavía no tienes regalos de eventos. ¡Además de tu Regalo Diario, recibes recompensas en tu cumpleaños, en el Aniversario (8 y 9 Nov) y en las fiestas del año!</p>';
+        : '<p class="muted" style="margin:0">Todavía no tienes regalos de eventos. Las sorpresas están bloqueadas y solo se revelan el día exacto de tu cumpleaños o de cada celebración.</p>';
     }
 
     function saveBday() {
@@ -2123,19 +1825,21 @@ ${cfg}</div>`;
       const now = new Date();
       $('#fest-list')!.innerHTML = HOLIDAYS.map((h) => {
         const act = getActiveYearForHoliday(h, now) !== null;
-        const own = regalos.some((g) => g.k === h.id);
+        const own = regalos.some((g) => g.k === h.id && g.y === now.getFullYear());
+        const canOpen = act || own;
         const diff = daysUntilHoliday(h, now);
-        const rewards = getHolidayRewards(h);
         const st = act
-          ? '¡Evento activo hoy! 🎉'
-          : `${h.day} de ${MESES[h.month - 1]}${h.isGrandAnniversary ? ' (y tolerancia el 9 Nov)' : ''} · faltan ${diff} días`;
-        return `<div class="fest${h.isGrandAnniversary ? ' grand' : ''}">
-          <span aria-hidden="true">${h.emoji}</span>
+          ? '¡Hoy es el día exacto! Sorpresa desbloqueada 🎉'
+          : `🔒 Sorpresa bloqueada · Se revela el ${h.day} de ${MESES[h.month - 1]} (faltan ${diff} ${diff === 1 ? 'día' : 'días'})`;
+        return `<div class="fest${h.isGrandAnniversary ? ' grand' : ''}${!canOpen ? ' locked-fest' : ''}">
+          <span aria-hidden="true">${canOpen ? h.emoji : '🔒'}</span>
           <div>
             <b>${h.name}</b>
-            <small>${st} · Límite: ${rewards.length} recompensas (${h.wallpapers.length} fondos y ${h.badges.length} ${h.badges.length === 1 ? 'insignia' : 'insignias'})${own ? ' · ✓ Desbloqueado' : ''}</small>
+            <small>${st}${own ? ' · ✓ Recibido' : ''}</small>
           </div>
-          <button class="btn ${own ? 'ghost' : ''}" type="button" data-prev="${h.id}">${own ? 'Ver regalos' : 'Recibir regalos'}</button>
+          <button class="btn ${own ? 'ghost' : ''}" type="button" data-prev="${h.id}" ${!canOpen ? 'disabled aria-disabled="true"' : ''}>
+            ${act ? (own ? 'Ver mi sorpresa 🎁' : 'Abrir sorpresa 🎁') : own ? 'Ver regalos' : '🔒 Bloqueado'}
+          </button>
         </div>`;
       }).join('');
     }
@@ -2163,7 +1867,6 @@ ${cfg}</div>`;
 
       let giftsHtml = '';
       if (holiday) {
-        // Aplicar límite estricto de recompensas: máx 3 en fiestas normales, exactamente 4 en Aniversario
         const rewards = getHolidayRewards(holiday);
         rewards.forEach((r) => {
           if (r.kind === 'wallpaper') {
@@ -2197,13 +1900,17 @@ ${cfg}</div>`;
       cardEl.scrollTop = 0;
       $('#bday-ok')!.focus({ preventScroll: true });
       if (!preview && document.hidden) {
-        notify(opts.big + ' ' + opts.title, 'Tienes regalos nuevos esperándote.', 'celeb');
+        notify(opts.big + ' ' + opts.title, 'Tienes regalos nuevos esperándote en PerDay.', 'celeb');
       }
       renderPerfil();
       renderHoy();
     }
 
     function celebrateBday(preview: boolean, late: boolean, year?: number) {
+      if (!isBirthdayUnlockedToday(bday, new Date())) {
+        showTip('🔒 La sorpresa de cumpleaños está bloqueada y solo se revela en tu fecha exacta.');
+        return;
+      }
       const n = regalos.filter((g) => !g.k).length;
       const g: StoredGift = {
         y: year || new Date().getFullYear(),
@@ -2212,14 +1919,14 @@ ${cfg}</div>`;
         badge: n % 12,
         msg: n % 12,
       };
-      if (!preview) {
+      if (!preview && !regalos.some((x) => !x.k && x.y === g.y)) {
         regalos.push(g);
         store.set('menarca_regalos', regalos);
         triggerCloudSync();
       }
       showCelebModal({
         big: '🎂',
-        title: late ? '¡Feliz cumpleaños atrasado!' : '¡Feliz cumpleaños!',
+        title: late ? '¡Feliz cumpleaños!' : '¡Feliz cumpleaños!',
         msg: BMSGS[g.msg || 0],
         g,
         preview,
@@ -2228,6 +1935,13 @@ ${cfg}</div>`;
     }
 
     function celebHol(h: HolidayEvent, yr: number, preview: boolean) {
+      const now = new Date();
+      const activeToday = getActiveYearForHoliday(h, now) !== null;
+      const alreadyOwned = regalos.some((x) => x.k === h.id && x.y === yr);
+      if (!activeToday && !alreadyOwned) {
+        showTip(`🔒 La sorpresa de ${h.name} está bloqueada hasta el ${h.day} de ${MESES[h.month - 1]}.`);
+        return;
+      }
       const rewards = getHolidayRewards(h);
       const rewardedWallpapers = rewards.filter((r) => r.kind === 'wallpaper').map((r) => r.id);
       const rewardedBadges = rewards
@@ -2245,7 +1959,6 @@ ${cfg}</div>`;
         ins: firstBadge ? [firstBadge.emoji, firstBadge.name, firstBadge.image] : ['🎉', h.name],
         t: Date.now(),
       };
-      const alreadyOwned = regalos.some((x) => x.k === h.id && x.y === yr);
       if (!alreadyOwned) {
         regalos.push(g);
         store.set('menarca_regalos', regalos);
@@ -2268,15 +1981,14 @@ ${cfg}</div>`;
 
     function checkBday() {
       const i = bdayInfo();
-      if (!i || i.diff > 0 || i.diff < -6) return false;
+      if (!i || !isBirthdayUnlockedToday(bday, new Date())) return false;
       if (regalos.some((g) => !g.k && g.y === i.year)) return false;
-      celebrateBday(false, i.diff < 0, i.year);
+      celebrateBday(false, false, i.year);
       return true;
     }
 
     function checkCelebs() {
       if (!$('#lock')!.hidden || !$('#bday')!.hidden || !$('#auth-modal')!.hidden) return;
-      // Aniversario de la App (8 de Noviembre + tolerancia 9 de Noviembre) tiene prioridad máxima
       const now = new Date();
       if (isAppAnniversary(now)) {
         const anniv = HOLIDAYS.find((h) => h.isGrandAnniversary)!;
@@ -2938,14 +2650,13 @@ ${cfg}</div>`;
     $('#hist-del')!.onclick = () => {
       const keep = store
         .get<DayEntry[]>('menarca_animo', [])
-        .map((x) => ({ ...x, m: null }))
+        .map((x) => ({ ...x, m: null, moods: [] }))
         .filter(
           (x) =>
             x.periodo === 'si' ||
             (x.dolor && x.dolor.length) ||
             (x.flujo && x.flujo !== 'ninguno') ||
             x.peso != null ||
-            (x.agua && x.agua > 0) ||
             x.nota
         );
       if (keep.length) store.set('menarca_animo', keep);
@@ -2997,11 +2708,14 @@ ${cfg}</div>`;
         fecha: iso(new Date()),
         wMin: r.wMin,
         wMax: r.wMax,
+        symptomCountUsed: r.symptomCountUsed,
+        matchedSymptoms: r.matchedSymptoms,
         sig: {
           mamas: fd.mamas === 'si',
           vello: ['axilas', 'publica', 'ambas'].includes(fd.vello),
           crece: fd.crece === 'm4a7' || fd.crece === 'mas7',
           flujo: fd.flujo === 'si',
+          sintomas: (r.symptomCountUsed || 0) > 0,
         },
       });
       triggerCloudSync();
@@ -3164,14 +2878,18 @@ ${cfg}</div>`;
       );
     };
 
-    // Registro diario
+    // Registro diario: Estados de ánimo de selección múltiple (etiquetas)
     $('#reg-moods')!.addEventListener('click', (e) => {
       const b = (e.target as HTMLElement).closest<HTMLElement>('[data-rm]');
       if (!b) return;
       const v = +b.dataset.rm!;
-      regMood = regMood === v ? null : v;
+      if (regMoods.includes(v)) {
+        regMoods = regMoods.filter((x) => x !== v);
+      } else {
+        regMoods = [...regMoods, v].sort((a, z) => a - z);
+      }
       $$<HTMLElement>('#reg-moods .mood').forEach((x) => {
-        const on = +x.dataset.rm! === regMood;
+        const on = regMoods.includes(+x.dataset.rm!);
         x.classList.toggle('on', on);
         x.setAttribute('aria-pressed', String(on));
       });
@@ -3239,52 +2957,15 @@ ${cfg}</div>`;
     renderPerfil();
     renderHome();
 
-    $('#rut-list')!.addEventListener('click', rutClick);
-    $('#rut-hoy')!.addEventListener('click', rutClick);
-    $('#rut-list')!.addEventListener('change', rutChange);
-    $('#rut-add')!.addEventListener('click', (e) => {
-      const b = (e.target as HTMLElement).closest<HTMLElement>('[data-add]');
-      if (!b) return;
-      const p = RUT_PRE.find((x) => x.id === b.dataset.add);
-      if (p && !rut!.items.some((x) => x.id === p.id)) {
-        rut!.items.push({
-          id: p.id,
-          n: p.n,
-          e: p.e,
-          goal: p.goal,
-          rem: false,
-          every: 120,
-          from: '08:00',
-          to: '20:00',
-        });
-        saveRut();
-        renderRutinas();
-      }
-    });
-
-    $('#rut-form')!.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const i = $<HTMLInputElement>('#rut-new')!;
-      const n = i.value.trim().slice(0, 30);
-      if (!n || rut!.items.length >= 12) return;
-      rut!.items.push({
-        id: 'c' + Date.now(),
-        n,
-        e: '⭐',
-        goal: 1,
-        rem: false,
-        every: 120,
-        from: '08:00',
-        to: '20:00',
-      });
-      i.value = '';
-      saveRut();
-      renderRutinas();
-    });
-
     $('#bd-d')!.addEventListener('change', saveBday);
     $('#bd-m')!.addEventListener('change', saveBday);
-    $('#bday-test')!.onclick = () => celebrateBday(true, false);
+    $('#bday-test')!.onclick = () => {
+      if (!isBirthdayUnlockedToday(bday, new Date())) {
+        showTip('🔒 La sorpresa de cumpleaños está bloqueada hasta el día exacto de tu cumpleaños.');
+        return;
+      }
+      celebrateBday(false, false);
+    };
     $('#bday-del')!.onclick = () => {
       bday = null;
       store.del('menarca_bday');
@@ -3295,10 +2976,18 @@ ${cfg}</div>`;
     };
 
     $('#fest-list')!.addEventListener('click', (e) => {
-      const b = (e.target as HTMLElement).closest<HTMLElement>('[data-prev]');
-      if (!b) return;
+      const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-prev]');
+      if (!b || b.disabled) return;
       const h = HOLMAP[b.dataset.prev!];
-      if (h) celebHol(h, new Date().getFullYear(), false);
+      if (!h) return;
+      const now = new Date();
+      const act = getActiveYearForHoliday(h, now) !== null;
+      const own = regalos.some((g) => g.k === h.id && g.y === now.getFullYear());
+      if (!act && !own) {
+        showTip(`🔒 Esta sorpresa está bloqueada hasta el ${h.day} de ${MESES[h.month - 1]}.`);
+        return;
+      }
+      celebHol(h, now.getFullYear(), false);
     });
 
     $('#bday-ok')!.onclick = () => {
@@ -3318,9 +3007,6 @@ ${cfg}</div>`;
     };
 
     setTimeout(checkCelebs, 450);
-    $('#notif-on')!.onclick = askNotif;
-    $('#notif-test')!.onclick = () =>
-      notify('💧 ¡Hora de beber agua!', 'Así te llegará el aviso. Toma un vaso cuando puedas.', 'test');
 
     setInterval(tick, 20000);
     const h = location.hash.slice(1);
@@ -3386,7 +3072,7 @@ ${cfg}</div>`;
 
       <header className="top">
         <div className="brand">
-          <span aria-hidden="true">🌙</span> Estimar menarca
+          <span aria-hidden="true">🌙</span> PerDay
         </div>
         <div className="ctrls">
           <button className="btn-install" id="btn-cloud-top" type="button" aria-label="Cuenta y sincronización en la nube">
@@ -3432,15 +3118,15 @@ ${cfg}</div>`;
           {/* 1. Tarjeta de Sincronización en la Nube en Inicio */}
           <div className="card acct-status-box" style={{ marginBottom: '16px' }}></div>
 
-          {/* 2. Mascotas Virtuales en el Inicio */}
+          {/* 3. Mascotas Decorativas en el Inicio */}
           <div className="card" id="pet-card" style={{ marginBottom: '16px' }}>
-            <h2>Mi Mascota Virtual 🐾</h2>
+            <h2>Mascota Decorativa 🐾</h2>
             <div id="pet-section-host"></div>
           </div>
 
           <div className="grid">
             <div className="card hoy">
-              <h2>Hoy</h2>
+              <h2>Hoy en PerDay</h2>
               <p className="val" id="hoy-animo">
                 Aún sin registrar
               </p>
@@ -3448,7 +3134,7 @@ ${cfg}</div>`;
                 Haz una estimación
               </p>
               <p className="muted" id="hoy-salud" style={{ margin: '6px 0 0', fontWeight: 600, fontSize: '14px' }}>
-                💧 0/8 vasos · ⚖️ Peso sin anotar
+                🩺 Sin síntomas hoy
               </p>
               <p className="muted" id="hoy-bday" style={{ margin: '6px 0 0' }} hidden></p>
               <button className="btn ghost" data-go="estimar" type="button" style={{ marginTop: '14px' }}>
@@ -3529,37 +3215,30 @@ ${cfg}</div>`;
                 <div className="opts" id="reg-int"></div>
               </fieldset>
               <fieldset>
-                <legend>¿Cómo te sentiste?</legend>
-                <div className="moods" id="reg-moods"></div>
+                <legend>¿Cómo te sentiste? (Puedes marcar varias etiquetas a la vez)</legend>
+                <div className="moods multi-tags" id="reg-moods"></div>
               </fieldset>
               <fieldset>
-                <legend>¿Notaste alguna señal en tu cuerpo? (Conectado al pronóstico)</legend>
-                <div className="tiles" id="reg-mol"></div>
+                <legend>¿Notaste algún síntoma físico? (Selección múltiple conectada a tu predicción)</legend>
+                <div className="tiles multi-tags" id="reg-mol"></div>
               </fieldset>
               <fieldset>
                 <legend>¿Cómo fue tu flujo?</legend>
                 <div className="tiles" id="reg-flu"></div>
               </fieldset>
 
-              {/* 3. Nuevos Registros de Salud Diario: Peso y Agua */}
-              <div className="health-grid">
-                <fieldset style={{ marginBottom: 0 }}>
-                  <legend>⚖️ Peso del día (kg)</legend>
-                  <input
-                    type="number"
-                    id="reg-peso"
-                    step="0.1"
-                    min="20"
-                    max="150"
-                    placeholder="Ejemplo: 45.5"
-                    aria-label="Peso en kilogramos"
-                  />
-                </fieldset>
-                <fieldset style={{ marginBottom: 0 }}>
-                  <legend>💧 Vasos de agua hoy</legend>
-                  <div id="reg-agua-meter"></div>
-                </fieldset>
-              </div>
+              <fieldset>
+                <legend>⚖️ Peso del día (kg, opcional)</legend>
+                <input
+                  type="number"
+                  id="reg-peso"
+                  step="0.1"
+                  min="20"
+                  max="150"
+                  placeholder="Ejemplo: 45.5"
+                  aria-label="Peso en kilogramos"
+                />
+              </fieldset>
 
               <textarea id="reg-nota" maxLength={200} placeholder="Nota (opcional)" aria-label="Nota"></textarea>
               <div id="day-tips"></div>
@@ -3590,13 +3269,6 @@ ${cfg}</div>`;
                 <p className="muted" style={{ margin: 0, fontSize: '14px' }}>
                   Esto es solo una orientación, no un diagnóstico.
                 </p>
-              </div>
-              <div className="card" id="rut-card">
-                <h2>Rutinas de hoy</h2>
-                <div id="rut-hoy"></div>
-                <button className="btn ghost block" data-go="perfil" type="button">
-                  Cambiar mis rutinas
-                </button>
               </div>
             </div>
 
@@ -3785,7 +3457,7 @@ ${cfg}</div>`;
             <div className="card span2" id="card-bday">
               <h2>Mi cumpleaños 🎂 y Regalos</h2>
               <p className="muted">
-                Cuando llegue tu día o entres en una fecha festiva, recibes fondos temáticos e insignias coleccionables.
+                Tu regalo sorpresa permanece bloqueado y solo se revela el día exacto de tu cumpleaños.
               </p>
               <div className="row" style={{ marginBottom: '10px' }}>
                 <select id="bd-d" aria-label="Día"></select>
@@ -3793,8 +3465,8 @@ ${cfg}</div>`;
               </div>
               <p className="muted" id="bday-info" role="status" style={{ margin: '0 0 12px' }}></p>
               <div className="btns" style={{ justifyContent: 'flex-start' }}>
-                <button className="btn ghost" id="bday-test" type="button">
-                  Ver cómo será la sorpresa
+                <button className="btn ghost" id="bday-test" type="button" disabled>
+                  🔒 Bloqueado hasta tu cumpleaños
                 </button>
                 <button className="btn ghost" id="bday-del" type="button" hidden>
                   Quitar fecha
@@ -3807,20 +3479,20 @@ ${cfg}</div>`;
             <div className="card">
               <h2>Celebraciones y Aniversario 🎉</h2>
               <p className="muted">
-                El 8 de noviembre (con tolerancia el 9 de noviembre) es el Gran Aniversario con 4 recompensas exclusivas. En Navidad, Halloween, San Valentín y Primavera recibes hasta 3 recompensas por evento.
+                Las sorpresas están bloqueadas antes de tiempo y solo se revelan el día exacto de cada fecha (Aniversario 8 de noviembre, Navidad, Halloween, San Valentín y Primavera).
               </p>
               <div id="fest-list"></div>
             </div>
 
-            {/* 4. Fondo de pantalla: Solo fondos regalados por la app (sin subida de archivos) */}
+            {/* 2. Fondo de pantalla: 10 Fondos Diarios */}
             <div className="card span2">
-              <h2>Fondo de pantalla 🎁</h2>
+              <h2>Fondo de pantalla (10 Regalos Diarios) 🎁</h2>
               <p className="muted">
-                Solo puedes usar los fondos oficiales que la aplicación te regala cada día (Regalo Diario) y en las celebraciones especiales.
+                Recibes 1 de los 10 fondos nuevos cada día que entras seguido a PerDay, además de los fondos de celebraciones en su fecha exacta.
               </p>
               <div className="bgs" id="bgs"></div>
               <p className="muted" id="bg-msg" role="status" style={{ margin: '6px 0 0', fontSize: '13px' }}>
-                ✨ Abre la aplicación cada día para coleccionar un fondo nuevo automático.
+                ✨ Entra cada día seguido a PerDay para desbloquear los 10 fondos diarios exclusivos.
               </p>
             </div>
 
@@ -3853,37 +3525,6 @@ ${cfg}</div>`;
                 </button>
               </div>
             </div>
-
-            <div className="card span3" id="card-rut">
-              <h2>Mis rutinas</h2>
-              <p className="muted">
-                Marca lo que haces cada día, por ejemplo beber agua. Si quieres, la página te manda un aviso para recordártelo.
-              </p>
-              <div className="notif">
-                <p id="notif-txt"></p>
-                <button className="btn" id="notif-on" type="button">
-                  Activar avisos
-                </button>
-                <button className="btn ghost" id="notif-test" type="button">
-                  Probar aviso
-                </button>
-              </div>
-              <div id="rut-list"></div>
-              <h3 style={{ margin: '16px 0 8px', fontSize: '16px' }}>Agregar rutina</h3>
-              <div className="chips" id="rut-add" style={{ marginBottom: '12px' }}></div>
-              <form className="msg-form" id="rut-form">
-                <input
-                  type="text"
-                  id="rut-new"
-                  maxLength={30}
-                  placeholder="Mi propia rutina, por ejemplo: leer 10 minutos"
-                  aria-label="Nueva rutina"
-                />
-                <button className="btn" type="submit">
-                  Agregar
-                </button>
-              </form>
-            </div>
           </div>
         </section>
       </main>
@@ -3906,7 +3547,7 @@ ${cfg}</div>`;
       <aside className="drawer" id="drawer" aria-label="Menú">
         <div className="dr-head">
           <div className="brand">
-            <span aria-hidden="true">🌙</span> Menú
+            <span aria-hidden="true">🌙</span> PerDay
           </div>
           <button
             className="btn ghost"
@@ -3925,10 +3566,10 @@ ${cfg}</div>`;
           Registrar el día
         </button>
         <button className="dr-item" data-go="estimar" type="button">
-          Estimar menarca
+          Estimar
         </button>
         <button className="dr-item" data-go="perfil" type="button">
-          Mis rutinas y perfil
+          Mi perfil
         </button>
         <button className="dr-item" id="dr-cloud" type="button">
           ☁️ Sincronización en la nube
@@ -3937,7 +3578,7 @@ ${cfg}</div>`;
           📥 Exportar historial (JSON)
         </button>
         <button className="dr-item btn-install-pwa" type="button">
-          📲 <span className="bi-txt">Instalar app</span>
+          📲 <span className="bi-txt">Instalar PerDay</span>
         </button>
         <button className="dr-item" id="dr-lock" type="button">
           Bloquear ahora
@@ -3955,7 +3596,7 @@ ${cfg}</div>`;
       <div id="lock">
         <div className="card lockc">
           <div className="brand" style={{ justifyContent: 'center', marginBottom: '6px' }}>
-            <span aria-hidden="true">🌙</span> Estimar menarca
+            <span aria-hidden="true">🌙</span> PerDay
           </div>
           <h2 id="lock-t" style={{ textAlign: 'center', marginTop: '14px' }}></h2>
           <p className="muted" id="lock-p" style={{ textAlign: 'center', marginBottom: 0 }}></p>
